@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\CategoriaCliente;
+use App\Models\User;
+use Illuminate\Auth\Access\Response;
+
+class CategoriaClientePolicy
+{
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('comercial_ver');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, CategoriaCliente $categoriaCliente): bool
+    {
+        // Solo puede ver si pertenece a la misma empresa (tenant)
+        return $user->can('comercial_ver');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
+    {
+        return $user->can('comercial_crear');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, CategoriaCliente $categoriaCliente): bool
+    {
+        return $user->can('comercial_actualizar');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, CategoriaCliente $categoriaCliente): bool
+    {
+        return $user->can('comercial_eliminar');
+    }
+
+    /**
+     * Determine whether the user can restore the model.
+     */
+    public function restore(User $user, CategoriaCliente $categoriaCliente): bool
+    {
+        return $user->can('comercial_actualizar');
+    }
+
+    /**
+     * Determine whether the user can permanently delete the model.
+     */
+    public function forceDelete(User $user, CategoriaCliente $categoriaCliente): bool
+    {
+        return $user->can('comercial_eliminar');
+    }
+}
