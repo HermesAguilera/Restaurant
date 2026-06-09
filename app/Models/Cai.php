@@ -2,20 +2,20 @@
 
 namespace App\Models;
 
-use App\Models\Traits\TenantScoped;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cai extends Model
 {
-    use HasFactory, TenantScoped, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'cais';
 
     protected $fillable = [
         'cai',
-        'empresa_id',
+        
         'establecimiento',
         'punto_emision',
         'tipo_documento',
@@ -63,7 +63,7 @@ class Cai extends Model
      */
     public static function obtenerCaiSeguro($empresaId): ?self
     {
-        return self::where('empresa_id', $empresaId)
+        return self::where( $empresaId)
             ->where('activo', true)
             ->whereDate('fecha_limite_emision', '>=', now())
             ->whereColumn('numero_actual', '<', 'rango_final')

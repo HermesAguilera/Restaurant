@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('percepciones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('empresa_id')->constrained('empresas');
+
             $table->string('percepcion');
 
             // Aquí el valor puede representar tanto un porcentaje como un monto

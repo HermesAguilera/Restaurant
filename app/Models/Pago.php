@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\Traits\TenantScoped;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Pago extends Model
 {
-    use HasFactory, SoftDeletes, TenantScoped;
+    use HasFactory, SoftDeletes;
 
     /**
      * The table associated with the model.
@@ -26,7 +26,7 @@ class Pago extends Model
     protected $fillable = [
         'factura_id',
         'metodo_pago_id',
-        'empresa_id',
+        
         'monto',
         'referencia',
         'monto_recibido',

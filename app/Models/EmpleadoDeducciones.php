@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Traits\TenantScoped;
+
 
 class EmpleadoDeducciones extends Model
 {
-    use HasFactory, SoftDeletes, TenantScoped;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'empleado_deducciones';
 
     protected $fillable = [
         'empleado_id',
         'deduccion_id',
-        'empresa_id',
+        
         'created_by',
         'updated_by',
         'deleted_by',
@@ -34,6 +34,6 @@ class EmpleadoDeducciones extends Model
 
         public function empresa()
     {
-        return $this->belongsTo(Empresa::class, 'empresa_id');
+        return $this->belongsTo(Empresa::class, );
     }
 }

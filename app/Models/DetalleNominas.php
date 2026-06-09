@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Traits\TenantScoped;
+
 
 class DetalleNominas extends Model
 {
 
-        use HasFactory, SoftDeletes, TenantScoped;
+        use HasFactory, SoftDeletes;
 
     protected $table = 'detalle_nominas';
 
@@ -18,7 +18,7 @@ class DetalleNominas extends Model
         'nomina_id',
         'empleado_id',
         'sueldo_bruto',
-        'empresa_id',
+        
         'deducciones',
         'deducciones_detalle',
         'percepciones',
@@ -44,7 +44,7 @@ class DetalleNominas extends Model
 
     public function empresa()
     {
-        return $this->belongsTo(Empresa::class, 'empresa_id');
+        return $this->belongsTo(Empresa::class, );
     }
 
     // Relación para deducciones asociadas a este detalle de nómina

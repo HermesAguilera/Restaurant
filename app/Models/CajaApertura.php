@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Traits\TenantScoped;
+
 
 
 class CajaApertura extends Model
 {
-    use HasFactory, TenantScoped;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -20,7 +20,7 @@ class CajaApertura extends Model
      */
     protected $fillable = [
         'user_id',
-        'empresa_id',
+        
         'monto_inicial',
         'monto_final_calculado',
         'fecha_apertura',

@@ -44,7 +44,6 @@ class InventoriesChart extends ChartWidget
                 DB::raw('COALESCE(SUM(cantidad), 0) as total_qty')
             ])
             ->whereNull('deleted_at')
-            ->where('empresa_id', auth()->user()->empresa_id) // tenant manual
             ->groupBy('date')
             ->orderBy('date', 'asc');
 

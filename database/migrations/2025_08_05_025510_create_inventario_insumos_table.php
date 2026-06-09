@@ -10,11 +10,11 @@ return new class extends Migration
     {
         Schema::create('inventario_insumos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('empresa_id')->constrained('empresas');
+
             $table->foreignId('producto_id')->constrained('productos');
             $table->integer('cantidad');
             $table->decimal('precio_costo', 10, 2);
-            $table->unique(['empresa_id', 'producto_id']); 
+
 
             $table->timestamps();
             $table->softDeletes();

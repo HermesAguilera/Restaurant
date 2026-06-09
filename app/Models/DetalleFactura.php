@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Traits\TenantScoped;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // El nombre de la clase es "detalle_factura" (minúsculas y guion bajo)
 class DetalleFactura extends Model
 {
-    use HasFactory, SoftDeletes, TenantScoped;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'detalle_factura';
 

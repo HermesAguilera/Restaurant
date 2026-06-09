@@ -6,16 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Traits\TenantScoped;
+
 
 class OrdenCompras extends Model
 {
-    use HasFactory, SoftDeletes, TenantScoped;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'tipo_orden_compra_id',
         'proveedor_id',
-        'empresa_id',
+        
         'fecha_realizada',
         'estado',
         'descripcion',
@@ -49,7 +49,7 @@ class OrdenCompras extends Model
 
     public function empresa()
     {
-        return $this->belongsTo(Empresa::class, 'empresa_id');
+        return $this->belongsTo(Empresa::class, );
     }
 
     public function getTipoOrdenNombreAttribute()

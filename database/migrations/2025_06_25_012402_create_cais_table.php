@@ -21,7 +21,7 @@ return new class extends Migration
 
             // --- Datos del CAI ---
             $table->string('cai')->unique()->comment('El código de autorización de impresión.');
-            $table->foreignId('empresa_id')->constrained('empresas')->comment('Empresa a la que pertenece el CAI.');
+
 
             // --- Rango de Facturación ---
             $table->unsignedBigInteger('rango_inicial');

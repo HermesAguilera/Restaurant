@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('caja_aperturas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
-            $table->foreignId('empresa_id')->constrained();
+
             $table->decimal('monto_inicial', 10, 2);
             $table->decimal('monto_final_calculado', 10, 2)->nullable();
             $table->json('conteo_usuario')->nullable();

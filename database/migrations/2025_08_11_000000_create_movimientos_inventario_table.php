@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('movimientos_inventario', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('empresa_id')->constrained('empresas');
+
             $table->foreignId('producto_id')->constrained('productos');
             $table->enum('tipo', ['entrada', 'salida']);
             $table->float('cantidad');

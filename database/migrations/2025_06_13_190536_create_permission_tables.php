@@ -41,22 +41,14 @@ return new class extends Migration
                 $table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
             }
             
-            // --- CAMBIO AGREGADO ---
-            // Se añade la llave foránea para la empresa
-            $table->foreignId('empresa_id')->constrained('empresas')->onDelete('cascade');
-            
             $table->string('name', 125);       // For MySQL 8.0 use string('name', 125);
             $table->string('guard_name', 125); // For MySQL 8.0 use string('guard_name', 125);
             $table->timestamps();
             
             if ($teams || config('permission.testing')) {
-                // --- CAMBIO AGREGADO ---
-                // Se añade empresa_id a la restricción de unicidad
-                $table->unique([$columnNames['team_foreign_key'], 'empresa_id', 'name', 'guard_name'], 'roles_team_empresa_name_guard_unique');
+                $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name'], 'roles_team_name_guard_unique');
             } else {
-                // --- CAMBIO AGREGADO ---
-                // Se añade empresa_id a la restricción de unicidad
-                $table->unique(['empresa_id', 'name', 'guard_name']);
+                $table->unique(['name', 'guard_name']);
             }
         });
 

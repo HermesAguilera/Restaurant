@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Traits\TenantScoped;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // El nombre de la clase es "Factura" (Mayúscula inicial)
 class Factura extends Model
 {
-    use HasFactory, TenantScoped, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'facturas';
 
@@ -22,8 +22,8 @@ class Factura extends Model
     protected $fillable = [
         'numero_factura', // Añadido
         'cai_id',         // Añadido
-        'cliente_id',
-        'empresa_id',
+        'nombre_cliente',
+        
         'empleado_id',
         'fecha_factura',
         'estado',
@@ -47,11 +47,6 @@ class Factura extends Model
         return $this->hasMany(DetalleFactura::class, 'factura_id');
     }
 
-    public function cliente()
-    {
-        return $this->belongsTo(Cliente::class);
-    }
-
     public function empleado()
     {
         return $this->belongsTo(Empleado::class);
@@ -70,14 +65,6 @@ class Factura extends Model
     public function cai()
     {
         return $this->belongsTo(Cai::class);
-    }
-
-    /**
-     * Una factura pertenece a una empresa.
-     */
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class);
     }
 
     public function pagos()

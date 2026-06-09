@@ -5,15 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Traits\TenantScoped;
+
 use App\Models\Productos;
 
 class InventarioInsumos extends Model
 {
-    use HasFactory, SoftDeletes, TenantScoped;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'empresa_id',
+        
         'producto_id',
         'cantidad',
         'precio_costo',
@@ -28,7 +28,7 @@ class InventarioInsumos extends Model
 
     public function empresa()
     {
-        return $this->belongsTo(Empresa::class, 'empresa_id');
+        return $this->belongsTo(Empresa::class, );
     }
 
     public function producto()

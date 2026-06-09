@@ -4,7 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use App\Models\Traits\TenantScoped;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class User extends Authenticatable //implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles; // Eliminamos TenantScoped para evitar problemas con la autenticación
+    use HasFactory, Notifiable, HasRoles; // Eliminamos para evitar problemas con la autenticación
 
     /**
      * The attributes that are mass assignable.
@@ -30,8 +30,6 @@ class User extends Authenticatable //implements FilamentUser
         'name',
         'email',
         'password',
-        'empresa_id',
-        'persona_id',
     ];
 
     /**
@@ -82,75 +80,6 @@ class User extends Authenticatable //implements FilamentUser
         return $this->belongsTo(User::class, 'deleted_by');
     }
 
-    public function empresa(): BelongsTo
-    {
-        return $this->belongsTo(Empresa::class);
-    }
-
-    public function persona()
-    {
-        return $this->belongsTo(Persona::class);
-    }
-
-
-    public function getEmpleadoAttribute()
-    {
-        return $this->persona?->empleado;
-    }
-
-    // App\Models\User.php
-
-
-
-    
-    /**
-     * Verifica si el usuario puede acceder a una empresa específica.
-     *
-     * @param int $empresaId
-     * @return bool
-     */
-    public function canAccessEmpresa($empresaId): bool
-    {
-        // Los usuarios con rol 'root' pueden acceder a cualquier empresa
-        if ($this->hasRole('root')) {
-            return true;
-        }
-        
-        // Los usuarios con roles admin pueden acceder a su propia empresa y a otras si hay permisos específicos
-        if ($this->hasRole(['super_admin', 'admin'])) {
-            // Por ahora, permitir al admin acceder a cualquier empresa
-            // En el futuro, se podría implementar una tabla de permisos específicos
-            return true;
-        }
-        
-        // Para otros usuarios, solo pueden acceder a su propia empresa
-        return $this->empresa_id == $empresaId;
-    }
-    
-    /**
-     * Obtiene todas las empresas a las que el usuario puede acceder.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getAccessibleEmpresas()
-    {
-        // Si es 'root', puede ver todas las empresas
-        if ($this->hasRole('root')) {
-            return Empresa::all();
-        }
-        
-        // Si es admin, puede ver todas las empresas (por ahora)
-        if ($this->hasRole(['super_admin', 'admin'])) {
-            return Empresa::all();
-        }
-        
-        // Para otros usuarios, solo su propia empresa
-        return Empresa::where('id', $this->empresa_id)->get();
-    }
-
-    public function empleado()
-    {
-        return $this->hasOneThrough(Empleado::class, Persona::class, 'id', 'persona_id', 'persona_id', 'id');
-    }
+    // Funciones de empresa y persona removidas
 
 }

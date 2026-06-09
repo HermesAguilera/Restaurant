@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('nomina_id')->constrained('nominas');
             $table->foreignId('empleado_id')->constrained('empleados');
-            $table->foreignId('empresa_id')->constrained('empresas');
+
             $table->decimal('sueldo_bruto', 10, 2);
             $table->decimal('deducciones', 10, 2)->default(0);
             $table->text('deducciones_detalle')->nullable();

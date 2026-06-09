@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tipo_orden_compra_id')->constrained('tipo_orden_compras');
             $table->foreignId('proveedor_id')->constrained('proveedores');
-            $table->foreignId('empresa_id')->constrained('empresas');
+
             $table->date('fecha_realizada');
             $table->string('estado')->default('Pendiente');
             $table->text('descripcion')->nullable();

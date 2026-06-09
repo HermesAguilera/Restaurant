@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Traits\TenantScoped;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class Proveedores extends Model
 {
-    use HasFactory, SoftDeletes, TenantScoped;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'proveedores';
 
@@ -21,7 +21,7 @@ class Proveedores extends Model
         'direccion',
         'municipio_id',
         'persona_contacto',
-        'empresa_id',
+        
         'created_by',
         'updated_by',
         'deleted_by',

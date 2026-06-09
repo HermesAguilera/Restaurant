@@ -6,8 +6,6 @@ use App\Models\DetalleNominas;
 use App\Observers\DetalleNominasObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\App;
-use App\Observers\EmpresaObserver;
-use App\Models\Empresa;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -32,7 +30,5 @@ class AppServiceProvider extends ServiceProvider
         if (class_exists('Maatwebsite\\Excel\\ExcelServiceProvider')) {
             $this->app->alias('Excel', 'Maatwebsite\\Excel\\Facades\\Excel');
         }
-    Empresa::observe(EmpresaObserver::class);
-    \App\Models\OrdenProduccion::observe(\App\Observers\OrdenProduccionObserver::class);
     }
 }

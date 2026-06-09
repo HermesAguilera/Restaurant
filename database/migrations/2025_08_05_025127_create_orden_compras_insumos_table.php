@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('orden_compras_insumos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('restrict');
-            $table->foreignId('empresa_id')->constrained('empresas')->onDelete('restrict');
+
             $table->date('fecha_realizada');
             $table->string('estado')->default('Pendiente');
             $table->text('descripcion')->nullable();

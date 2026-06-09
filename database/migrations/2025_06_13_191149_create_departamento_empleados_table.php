@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nombre_departamento_empleado', 100); 
             $table->text('descripcion', 200)->nullable(); 
-            $table->foreignId('empresa_id')->constrained('empresas');
+
             $table->timestamps(); // created_at y updated_at
             $table->softDeletes(); // deleted_at
 

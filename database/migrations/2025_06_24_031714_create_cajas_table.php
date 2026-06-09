@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('cajas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('empresa_id')->constrained('empresas');
+
             $table->string('nombre')->unique();
             $table->text('descripcion')->nullable();
             $table->enum('estado', ['activa', 'inactiva'])->default('activa');

@@ -17,9 +17,9 @@ return new class extends Migration
         $table->string('telefono', 20)->nullable();
         $table->string('rtn', 20)->nullable();
         $table->text('direccion', 200)->nullable();
-        $table->foreignId('municipio_id')->constrained('municipios');
+        $table->string('ciudad')->nullable();
         $table->string('persona_contacto', 255)->nullable();
-        $table->foreignId('empresa_id')->constrained('empresas');
+
         
         $table->timestamps(); // created_at y updated_at
         $table->softDeletes(); // deleted_at

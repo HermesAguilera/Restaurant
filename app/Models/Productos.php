@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\Traits\TenantScoped;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Productos extends Model
 {
-    use HasFactory, SoftDeletes, TenantScoped;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'productos';
 
@@ -24,7 +24,7 @@ class Productos extends Model
         'codigo',
         'color',
         'isv',
-        'empresa_id',
+        
         'created_by',
         'updated_by',
         'deleted_by',
@@ -50,19 +50,4 @@ class Productos extends Model
         return $this->hasMany(ProductoFoto::class, 'producto_id');
     }
 
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class);
-    }
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            if (!$model->empresa_id && auth()->check()) {
-                $model->empresa_id = auth()->user()->empresa_id;
-            }
-        });
-    }
 }

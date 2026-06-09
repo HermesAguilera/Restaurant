@@ -12,7 +12,7 @@ class MovimientoInventario extends Model
     protected $table = 'movimientos_inventario';
 
     protected $fillable = [
-        'empresa_id',
+        
         'producto_id',
         'tipo', // 'entrada' o 'salida'
         'cantidad',
@@ -28,7 +28,7 @@ class MovimientoInventario extends Model
 
     public function empresa()
     {
-        return $this->belongsTo(Empresa::class, 'empresa_id');
+        return $this->belongsTo(Empresa::class, );
     }
 
     public function usuario()

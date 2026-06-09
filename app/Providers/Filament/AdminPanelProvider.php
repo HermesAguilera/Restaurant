@@ -10,20 +10,12 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Filament\Pages\Dashboard;
-use App\Filament\Pages\RecibirOrdenCompraInsumos;
-use App\Filament\Pages\CustomLogin;
-use App\Filament\Widgets\OrdersChart;
-use App\Filament\Widgets\InventoriesChart;
-use App\Filament\Widgets\StatsOverview;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Filament\Facades\Filament;
-use Filament\Themes\ThemeToggle;
-use Filament\Pages\ThemeSwitcher;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -33,28 +25,22 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(CustomLogin::class)
-            ->darkMode() 
+            ->login(\App\Filament\Pages\CustomLogin::class)
+            ->darkMode()
+            ->colors(['primary' => Color::Amber])
             ->renderHook(
                 'panels::topbar.end',
-                fn () => view('components.theme-toggle'))
-
+                fn () => view('components.theme-toggle')
+            )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
-                // RecibirOrdenCompraInsumos::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                OrdersChart::class,
-                InventoriesChart::class,
-                StatsOverview::class,
+                // Sin widgets en el dashboard principal — el POS es la pantalla principal
             ])
-            ->renderHook(
-                'panels::topbar.start',
-                fn (): string => view('filament.custom.empresa-selector')->render() . view('filament.custom.resources-selector')->render()
-            )
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -63,7 +49,6 @@ class AdminPanelProvider extends PanelProvider
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
                 SubstituteBindings::class,
-                \App\Http\Middleware\SwitchEmpresaMiddleware::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])

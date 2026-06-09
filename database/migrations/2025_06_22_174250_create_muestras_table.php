@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('inventario_producto')->constrained('inventario_productos')->onDelete('restrict');
             $table->string('nombre_muestra')->comment('Nombre o identificación de la muestra');
             $table->decimal('cantidad', 8, 2);
-            $table->foreignId('unidades_id')->constrained('unidad_de_medidas')->onDelete('restrict');
+            $table->string('unidad_medida')->nullable();
             $table->decimal('temperatura', 5, 2)->nullable()->comment('Temperatura de la muestra');
             $table->date('fecha_muestra')->comment('Fecha de toma de la muestra');
             $table->timestamps();

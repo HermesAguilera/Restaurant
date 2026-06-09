@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Traits\TenantScoped;
+
 
 class Nominas extends Model
 {
     /** @use HasFactory<\Database\Factories\NominasFactory> */
-        use HasFactory, SoftDeletes, TenantScoped;
+        use HasFactory, SoftDeletes;
 
     protected $table = 'nominas';
 
@@ -18,7 +18,7 @@ class Nominas extends Model
         'mes',
         'año',
         'descripcion',
-        'empresa_id',
+        
         'empleado_id',
         'sueldo_bruto',
         'deducciones',
@@ -40,7 +40,7 @@ class Nominas extends Model
     // Relación con Empresa
     public function empresa()
     {
-        return $this->belongsTo(Empresa::class, 'empresa_id');
+        return $this->belongsTo(Empresa::class, );
     }
 
     protected static function boot()

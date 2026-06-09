@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Traits\TenantScoped;
+
 use Illuminate\Support\Facades\Auth;
 
 class TipoOrdenCompras extends Model
 {
-    use HasFactory, SoftDeletes, TenantScoped;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'tipo_orden_compras';
 
     protected $fillable = [
         'nombre',
-        'empresa_id',
+        
         'created_by',
         'updated_by',
         'deleted_by',
@@ -30,7 +30,7 @@ class TipoOrdenCompras extends Model
 
     public function empresa()
     {
-        return $this->belongsTo(Empresa::class, 'empresa_id');
+        return $this->belongsTo(Empresa::class, );
     }
 
     public function creadoPor()

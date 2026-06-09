@@ -5,17 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Traits\TenantScoped;
+
 
 class OrdenComprasInsumos extends Model
 {
-    use HasFactory, SoftDeletes, TenantScoped;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'orden_compras_insumos';
 
     protected $fillable = [
         'proveedor_id',
-        'empresa_id',
+        
         'fecha_realizada',
         'estado',
         'descripcion',
@@ -31,7 +31,7 @@ class OrdenComprasInsumos extends Model
 
     public function empresa()
     {
-        return $this->belongsTo(Empresa::class, 'empresa_id');
+        return $this->belongsTo(Empresa::class, );
     }
 
       public function detalles()

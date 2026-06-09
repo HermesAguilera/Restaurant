@@ -20,7 +20,7 @@ return new class extends Migration
             $table->boolean('cerrada')->default(false);
             $table->enum('tipo_pago', ['mensual', 'quincenal', 'semanal'])->default('mensual');
 
-            $table->foreignId('empresa_id')->constrained('empresas');
+
 
             // Nuevos campos de detalle_nominas
             $table->foreignId('empleado_id')->nullable()->constrained('empleados')->onDelete('cascade');

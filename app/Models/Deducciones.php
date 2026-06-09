@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Traits\TenantScoped;
+
 
 class Deducciones extends Model
 {
     /** @use HasFactory<\Database\Factories\DeduccionesFactory> */
-        use HasFactory, SoftDeletes, TenantScoped;
+        use HasFactory, SoftDeletes;
 
     protected $table = 'deducciones';
 
@@ -18,7 +18,7 @@ class Deducciones extends Model
         'deduccion',
         'valor',
         'tipo_valor',
-        'empresa_id',
+        
         'created_by',
         'updated_by',
         'deleted_by',
@@ -32,6 +32,6 @@ class Deducciones extends Model
 
         public function empresa()
     {
-        return $this->belongsTo(Empresa::class, 'empresa_id');
+        return $this->belongsTo(Empresa::class, );
     }
 }

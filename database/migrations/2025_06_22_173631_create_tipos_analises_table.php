@@ -15,7 +15,7 @@ return new class extends Migration
     $table->id();
     $table->string('nombre_analisis')->comment('Nombre del tipo de análisis, como "Grasa" o "pH"');
     $table->text('descripcion')->nullable()->comment('Descripción del análisis, por ejemplo "Mide el porcentaje de grasa"');
-    $table->foreignId('unidad_id')->constrained('unidad_de_medidas')->onDelete('restrict');
+    $table->string('unidad_medida')->nullable();
     
     // Auditoría
     $table->timestamps();

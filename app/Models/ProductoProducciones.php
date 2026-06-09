@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Traits\TenantScoped;
+
 
 class ProductoProducciones extends Model
 {
-    use HasFactory, TenantScoped, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     // La migración creó la tabla `producto_producciones`
     protected $table = 'producto_producciones';

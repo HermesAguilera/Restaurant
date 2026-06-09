@@ -2,20 +2,20 @@
 
 namespace App\Models;
 
-use App\Models\Traits\TenantScoped;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CategoriaProducto extends Model
 {
-    use HasFactory, SoftDeletes, TenantScoped;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'categorias_productos';
 
     protected $fillable = [
         'nombre',
-        'empresa_id',
+        
         'created_by',
         'updated_by',
         'deleted_by',

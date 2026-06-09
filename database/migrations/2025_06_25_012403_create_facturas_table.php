@@ -16,8 +16,7 @@ return new class extends Migration
             $table->string('numero_factura');
             $table->foreignId('cai_id')->nullable()->constrained('cais');
             // --- Relaciones ---
-            $table->foreignId('cliente_id')->constrained('clientes');
-            $table->foreignId('empresa_id')->constrained('empresas');
+            $table->string('nombre_cliente')->default('Consumidor Final');
             $table->foreignId('empleado_id')->constrained('empleados');
 
             // --- Datos de la Factura ---
@@ -37,7 +36,7 @@ return new class extends Migration
             $table->integer('updated_by')->nullable();
             $table->integer('deleted_by')->nullable();
 
-            $table->unique(['numero_factura', 'empresa_id']);
+            $table->unique('numero_factura');
         });
     }
 

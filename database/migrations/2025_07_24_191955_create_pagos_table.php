@@ -17,7 +17,7 @@ return new class extends Migration
             // --- Relaciones ---
             $table->foreignId('factura_id')->constrained('facturas');
             $table->foreignId('metodo_pago_id')->constrained('metodos_pagos');
-            $table->foreignId('empresa_id')->constrained('empresas');
+
 
             // --- Datos del Pago ---
             $table->decimal('monto', 10, 2);
