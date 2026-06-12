@@ -19,8 +19,10 @@ return new class extends Migration
             $table->enum('estado', ['pendiente', 'en_cocina', 'listo', 'entregado', 'pagado', 'cancelado'])->default('pendiente');
             $table->decimal('total', 10, 2)->default(0);
             $table->text('notas')->nullable();
-            $table->unsignedSmallInteger('numero_dia')->default(1); // Número de orden del día (se reinicia cada día)
-            $table->date('fecha_orden')->default(DB::raw('CURDATE()')); // Fecha de la orden para agrupar por día
+            $table->unsignedSmallInteger('numero_dia')->default(1);
+            $table->date('fecha_orden')->default(DB::raw('CURDATE()'));
+            $table->timestamp('entregado_at')->nullable();
+            $table->index('fecha_orden');
             $table->timestamps();
         });
     }

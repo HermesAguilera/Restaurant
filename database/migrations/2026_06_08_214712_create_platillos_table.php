@@ -13,6 +13,8 @@ return new class extends Migration
             $table->string('nombre');
             $table->text('descripcion')->nullable();
             $table->string('categoria')->nullable(); // Ej: Entradas, Platos Fuertes, Bebidas
+            $table->string('seccion')->default('general'); // general, china, pizza
+            $table->string('tipo')->default('comida'); // comida o bebida
             $table->decimal('precio', 10, 2);
             $table->boolean('disponible')->default(true);
             $table->timestamps();
