@@ -56,10 +56,6 @@ class CajaApertura extends Model
                 $apertura->user_id = Auth::id();
                 $apertura->fecha_apertura = now();
                 $apertura->estado = 'ABIERTA';
-
-                if (empty($apertura->empresa_id) && Auth::user()->empresa_id) {
-                    $apertura->empresa_id = Auth::user()->empresa_id;
-                }
             }
         });
     }
@@ -70,10 +66,5 @@ class CajaApertura extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function empresa(): BelongsTo
-    {
-        return $this->belongsTo(Empresa::class);
     }
 }

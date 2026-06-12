@@ -36,11 +36,6 @@ class Cai extends Model
 
     // --- Relaciones ---
 
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class);
-    }
-
     public function facturas()
     {
         return $this->hasMany(Factura::class);
@@ -58,13 +53,12 @@ class Cai extends Model
     }
 
     /**
-     * Devuelve el CAI activo y disponible para una empresa.
+     * Devuelve el CAI activo y disponible.
      * Bloquea el registro para uso en transacción.
      */
-    public static function obtenerCaiSeguro($empresaId): ?self
+    public static function obtenerCaiSeguro(): ?self
     {
-        return self::where( $empresaId)
-            ->where('activo', true)
+        return self::where('activo', true)
             ->whereDate('fecha_limite_emision', '>=', now())
             ->whereColumn('numero_actual', '<', 'rango_final')
             // CAMBIO CLAVE: Ordenar por el rango inicial asegura la secuencia numérica.

@@ -28,8 +28,9 @@ class ProveedoresResource extends Resource
     protected static ?string $navigationLabel = 'Proveedores';
     protected static ?string $pluralModelLabel = 'Proveedores';
     protected static ?string $modelLabel = 'Proveedor';
-    protected static ?string $navigationGroup = 'Comercial';
-    protected static ?int $navigationSort = 3;
+    protected static ?string $navigationGroup = 'Proveedores';
+    protected static bool $shouldRegisterNavigation = false;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -52,16 +53,6 @@ class ProveedoresResource extends Resource
                 ->label('Persona de Contacto')
                 ->maxLength(255),
 
-            Forms\Components\Select::make('empresa_id')
-                ->label('Empresa')
-                ->relationship('empresa', 'nombre')
-                ->searchable()
-                ->required()
-                ->default(fn () => Filament::auth()->user()?->empresa_id)
-                ->disabled(fn () => true) // visualmente no editable
-                ->dehydrated(true)        // asegura que se envíe el valor en el form
-                ->suffix(null),    
-
             Forms\Components\Select::make('pais_id')
                 ->label('País')
                 ->searchable()
@@ -77,7 +68,7 @@ class ProveedoresResource extends Resource
                 ->label('Departamento')
                 ->searchable()
                 ->placeholder('Seleccione un Departamento')
-                ->options(fn (callable $get) => 
+                ->options(fn (callable $get) =>
                     Departamento::where('pais_id', $get('pais_id'))
                         ->pluck('nombre_departamento', 'id')
                 )
@@ -121,14 +112,14 @@ class ProveedoresResource extends Resource
                 Tables\Columns\TextColumn::make('rtn')
                     ->label('RTN')
                     ->searchable(),
-    
+
 
                 Tables\Columns\TextColumn::make('municipio.nombre_municipio')
                     ->label('Municipio')
                     ->searchable()
                     ->sortable(),
-                
-                
+
+
 
                 Tables\Columns\TextColumn::make('persona_contacto')
                     ->label('Contacto')
@@ -179,7 +170,7 @@ class ProveedoresResource extends Resource
     {
         return [];
     }
-    
+
 
     public static function getPages(): array
     {

@@ -42,11 +42,6 @@ class DetalleNominas extends Model
         return $this->belongsTo(Empleado::class, 'empleado_id');
     }
 
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class, );
-    }
-
     // Relación para deducciones asociadas a este detalle de nómina
     public function empleadoDeducciones()
     {

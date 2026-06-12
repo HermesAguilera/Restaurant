@@ -31,9 +31,4 @@ class InventarioProductos extends Model
     {
         return $this->belongsTo(Productos::class);
     }
-
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class);
-    }
 }

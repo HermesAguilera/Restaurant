@@ -80,6 +80,14 @@ class User extends Authenticatable //implements FilamentUser
         return $this->belongsTo(User::class, 'deleted_by');
     }
 
-    // Funciones de empresa y persona removidas
-
+    public function roles()
+    {
+        return $this->morphToMany(
+            \Spatie\Permission\Models\Role::class,
+            'model',
+            'model_has_roles',
+            'model_id',
+            'role_id'
+        );
+    }
 }

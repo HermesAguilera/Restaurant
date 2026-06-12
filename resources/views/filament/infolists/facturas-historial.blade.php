@@ -1,7 +1,11 @@
 <div>
-    @if($getRecord()->facturas && $getRecord()->facturas->count() > 0)
+    @php
+        $facturas = $getRecord()->facturas ?? collect();
+    @endphp
+
+    @if($facturas->count() > 0)
         <div class="space-y-3">
-            @foreach($getRecord()->facturas as $factura)
+            @foreach($facturas as $factura)
                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <div class="flex-1">
                         <div class="flex items-center space-x-4">
@@ -22,10 +26,11 @@
                             </div>
                             <div>
                                 @php
-                                    $estadoColor = match($factura->estado ?? 'Sin estado') {
-                                        'pagado' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                    $estado = strtolower((string) ($factura->estado ?? 'Sin estado'));
+                                    $estadoColor = match($estado) {
+                                        'pagada', 'pagado' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
                                         'pendiente' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                        'vencido' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                        'vencida', 'vencido' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
                                         default => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
                                     };
                                 @endphp
@@ -40,7 +45,7 @@
         </div>
     @else
         <div class="text-center py-8 text-gray-500 dark:text-gray-400">
-            Este cliente (Consumidor Mayorista) aún no tiene facturas registradas
+            Este cliente aún no tiene facturas registradas.
         </div>
     @endif
 </div>

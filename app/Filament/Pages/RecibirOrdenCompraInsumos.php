@@ -78,7 +78,6 @@ class RecibirOrdenCompraInsumos extends Page implements HasForms
             $inventario = InventarioInsumos::firstOrCreate(
                 [
                     'producto_id' => $detalle->producto_id,
-                    'empresa_id' => $this->orden->empresa_id,
                 ],
                 [
                     'cantidad' => 0,

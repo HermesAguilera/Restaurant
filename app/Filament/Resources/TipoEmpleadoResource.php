@@ -19,6 +19,7 @@ class TipoEmpleadoResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-identification';
     protected static ?string $navigationGroup = 'Recursos Humanos';
+    protected static ?int $navigationSort = 2;
 
 
     public static function form(Form $form): Form

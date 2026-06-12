@@ -27,7 +27,6 @@ class NominaExport implements FromView
     {
         return view('excel.nomina', [
             'nomina' => $this->nomina,
-            'empresa' => $this->nomina->empresa,
             'mesNombre' => $this->mesNombre,
             'tipoPagoNombre' => $this->tipoPagoNombre,
             'fechaGeneracion' => now()->format('d/m/Y H:i:s'),

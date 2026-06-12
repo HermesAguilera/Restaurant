@@ -15,6 +15,8 @@ class Platillo extends Model
         'categoria',
         'precio',
         'disponible',
+        'seccion',
+        'tipo',
     ];
 
     protected $casts = [

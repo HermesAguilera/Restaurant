@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\InventarioProductosResource\Pages;
 use App\Models\InventarioProductos;
-use Filament\Facades\Filament; 
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Form;
@@ -19,6 +19,8 @@ class InventarioProductosResource extends Resource
     protected static ?string $navigationLabel = 'Gestión de Inventario';
     protected static ?string $modelLabel = 'Inventario de Producto';
     protected static ?string $navigationGroup = 'Inventario';
+    protected static bool $shouldRegisterNavigation = false;
+    protected static ?int $navigationSort = 1;
 
     public static function canCreate(): bool
     {
@@ -31,17 +33,6 @@ class InventarioProductosResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Información del Producto')
                     ->schema([
-                        // CAMBIO: Campo para manejar el empresa_id automáticamente
-                        Forms\Components\Select::make('empresa_id')
-                            ->label('Empresa')
-                            ->relationship('empresa', 'nombre')
-                            ->searchable()
-                            ->required()
-                            ->hidden()
-                            ->default(fn () => Filament::auth()->user()?->empresa_id)
-                            ->disabled()       // No es editable por el usuario
-                            ->dehydrated(true),  // Asegura que se guarde el valor
-                        
 
                         Forms\Components\Select::make('producto_id')
                             ->relationship('producto', 'nombre')
@@ -69,7 +60,7 @@ class InventarioProductosResource extends Resource
                             ->numeric()
                             ->required()
                             ->prefix('HNL'),
-                        
+
                         Forms\Components\TextInput::make('precio_mayorista')
                             ->label('Precio de Mayorista')
                             ->numeric()
@@ -87,14 +78,7 @@ class InventarioProductosResource extends Resource
                     ->label('SKU')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('producto.nombre')
                     ->label('Producto')->searchable()->sortable(),
-                
-                // CAMBIO: Columna opcional para ver la empresa (útil para administradores)
-                Tables\Columns\TextColumn::make('empresa.nombre')
-                    ->label('Empresa')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                
+
                 Tables\Columns\TextColumn::make('cantidad')
                     ->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('precio_costo')
@@ -110,7 +94,7 @@ class InventarioProductosResource extends Resource
                 //
             ])
             ->headerActions([
-                // 
+                //
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -133,20 +117,8 @@ class InventarioProductosResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        // Se obtiene el usuario autenticado
-        $user = Filament::auth()->user();
-
         // Se inicia la consulta base con las relaciones necesarias
-        $query = parent::getEloquentQuery()->with(['producto.unidadDeMedida', 'empresa']);
-
-        // IMPORTANTE: Si el usuario NO tiene el rol 'Admin', se filtra por su empresa.
-        // Un usuario con el rol 'Admin' se saltará este filtro y verá todos los registros.
-        // Asegúrate de que tu rol de superusuario se llame 'Admin' o cámbialo según corresponda.
-        if (!$user->hasRole('root')) {
-            $query->where('empresa_id', $user->empresa_id);
-        }
-
-        return $query;
+        return parent::getEloquentQuery()->with(['producto.unidadDeMedida']);
     }
 
     public static function getPages(): array

@@ -10,6 +10,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Pages\CustomLogin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -25,22 +26,50 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(\App\Filament\Pages\CustomLogin::class)
+
+            // Configuración del login nativo de Filament (Corregido)
+            ->login(CustomLogin::class)
+
             ->darkMode()
-            ->colors(['primary' => Color::Amber])
-            ->renderHook(
+            ->sidebarCollapsibleOnDesktop()
+            ->colors([
+                'primary' => Color::Amber,
+            ])
+            /* ->renderHook(
                 'panels::topbar.end',
                 fn () => view('components.theme-toggle')
+            ) */
+
+            ->discoverResources(
+                in: app_path('Filament/Resources'),
+                for: 'App\\Filament\\Resources'
             )
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverPages(
+                in: app_path('Filament/Pages'),
+                for: 'App\\Filament\\Pages'
+            )
+
             ->pages([
                 Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+
+            ->discoverWidgets(
+                in: app_path('Filament/Widgets'),
+                for: 'App\\Filament\\Widgets'
+            )
+
             ->widgets([
-                // Sin widgets en el dashboard principal — el POS es la pantalla principal
+                // Dashboard principal vacío o personalizado
             ])
+
+            ->navigationGroups([
+                'Restaurante',
+                'Recursos Humanos',
+                'Nominas',
+                'Ventas',
+                'Configuraciones',
+            ])
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -52,6 +81,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+
             ->authMiddleware([
                 Authenticate::class,
             ]);

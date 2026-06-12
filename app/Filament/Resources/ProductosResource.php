@@ -27,6 +27,7 @@ class ProductosResource extends Resource
     protected static ?string $pluralModelLabel = 'Productos';
     protected static ?string $modelLabel = 'Producto';
     protected static ?string $navigationGroup = 'Inventario';
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
     {
@@ -283,21 +284,6 @@ class ProductosResource extends Resource
                                     $set('subcategoria_id', $state);
                                 }
                             }),
-                        Forms\Components\Hidden::make('empresa_id')
-                            ->default(function () {
-                                $user = Filament::auth()->user();
-                                if (!$user->empresa_id) {
-                                    Notification::make()
-                                        ->title('Error')
-                                        ->body('No tienes una empresa asignada. Contacta al administrador.')
-                                        ->danger()
-                                        ->send();
-                                    throw new \Exception('El usuario no tiene una empresa asignada.');
-                                }
-                                return $user->empresa_id;
-                            })
-                            ->required()
-                            ->dehydrated(true),
                         Forms\Components\TextInput::make('sku')
                             ->label('SKU')
                             ->maxLength(100)
@@ -454,11 +440,6 @@ class ProductosResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $user = Filament::auth()->user();
-        $query = parent::getEloquentQuery()->with(['unidadDeMedida', 'empresa', 'categoria', 'subcategoria']);
-        if (!$user->hasRole('root')) {
-            $query->where('empresa_id', $user->empresa_id);
-        }
-        return $query;
+        return parent::getEloquentQuery()->with(['unidadDeMedida', 'empresa', 'categoria', 'subcategoria']);
     }
 }

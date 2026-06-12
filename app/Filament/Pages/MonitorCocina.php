@@ -8,29 +8,27 @@ use App\Models\OrdenRestaurante;
 class MonitorCocina extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-fire';
-    protected static ?string $title = 'Monitor de Cocina (KDS)';
+    protected static ?string $title = 'Monitor de Cocina';
+    protected static ?string $navigationLabel = 'Monitor de Cocina';
+    protected static ?string $navigationGroup = 'Restaurante';
+    protected static ?int $navigationSort = 1;
     protected static string $view = 'filament.pages.monitor-cocina';
+
+    public $seccion = 'general'; // 'general', 'china', 'pizza'
 
     public function getOrdenesProperty()
     {
-        return OrdenRestaurante::with('detalles.platillo')
-            ->whereIn('estado', ['pendiente', 'en_cocina'])
-            ->orderBy('created_at', 'asc')
-            ->get();
-    }
+        $query = OrdenRestaurante::with(['detalles.platillo' => function($query) {
+                $query->where('seccion', $this->seccion)
+                      ->where('tipo', 'comida'); // Exclude bebidas
+            }])
+            ->whereHas('detalles.platillo', function($query) {
+                $query->where('seccion', $this->seccion)
+                      ->where('tipo', 'comida'); // Exclude bebidas
+            })
+            ->whereNull('entregado_at')
+            ->orderBy('created_at', 'asc');
 
-    public function marcarEnCocina($ordenId)
-    {
-        OrdenRestaurante::where('id', $ordenId)->update(['estado' => 'en_cocina']);
-    }
-
-    public function marcarListo($ordenId)
-    {
-        OrdenRestaurante::where('id', $ordenId)->update(['estado' => 'listo']);
-        
-        \Filament\Notifications\Notification::make()
-            ->title('Orden Lista')
-            ->success()
-            ->send();
+        return $query->get();
     }
 }

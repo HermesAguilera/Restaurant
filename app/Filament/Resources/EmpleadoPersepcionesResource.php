@@ -31,7 +31,7 @@ class EmpleadoPersepcionesResource extends Resource
                 \Filament\Forms\Components\Select::make('empleado_id')
                     ->label('Empleado')
                     ->options(
-                        \App\Models\Empleado::all()->pluck('nombre_completo', 'id')
+                        \App\Models\Empleado::all()->pluck('nombre', 'id')
                     )
                     ->searchable()
                     ->required(),
@@ -67,15 +67,6 @@ class EmpleadoPersepcionesResource extends Resource
 
 
 
-                Forms\Components\Select::make('empresa_id')
-                    ->label('Empresa')
-                    ->relationship('empresa', 'nombre')
-                    ->default(fn () => Filament::auth()->user()?->empresa_id)
-                    ->hidden()
-                    ->required()
-                    ->dehydrated(true),
-                
-               
             ]);
     }
 
@@ -83,7 +74,7 @@ class EmpleadoPersepcionesResource extends Resource
     {
         return $table
             ->columns([
-                \Filament\Tables\Columns\TextColumn::make('empleado.nombre_completo')
+                \Filament\Tables\Columns\TextColumn::make('empleado.nombre')
                     ->label('Empleado')
                     ->sortable(),
 

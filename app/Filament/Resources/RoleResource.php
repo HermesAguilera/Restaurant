@@ -24,7 +24,6 @@ use Spatie\Permission\Models\Role as SpatieRole;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Validation\ValidationException;
 use Filament\Forms\Components\Hidden;
-use App\Models\Empresa;
 
 class RoleResource extends Resource
 {
@@ -46,20 +45,6 @@ class RoleResource extends Resource
             ->schema([
                 Section::make('Información del Rol')
                     ->schema([
-
-                        Select::make('empresa_id')
-                            ->label('Empresa')
-                            ->options(Empresa::pluck('nombre', 'id'))
-                            ->searchable()
-                            ->required()
-                            ->visible(fn () => $isRoot)
-                            ->default(fn () => $isRoot ? null : auth()->user()->empresa_id),
-
-                        // Campo oculto para no-roots - SIEMPRE debe estar presente
-                        Hidden::make('empresa_id')
-                            ->default(fn () => auth()->user()->empresa_id)
-                            ->visible(fn () => !$isRoot)
-                            ->dehydrated(true),
 
                         TextInput::make('name')
                             ->label('Nombre del Rol')

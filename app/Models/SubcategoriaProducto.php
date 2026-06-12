@@ -32,19 +32,8 @@ class SubcategoriaProducto extends Model
         return $this->hasMany(Productos::class, 'subcategoria_id');
     }
 
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class);
-    }
-
     public static function boot()
     {
         parent::boot();
-
-        static::creating(function ($model) {
-            if (!$model->empresa_id && auth()->check()) {
-                $model->empresa_id = auth()->user()->empresa_id;
-            }
-        });
     }
 }

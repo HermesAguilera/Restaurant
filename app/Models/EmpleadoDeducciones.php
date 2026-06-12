@@ -31,9 +31,5 @@ class EmpleadoDeducciones extends Model
     {
         return $this->belongsTo(Deducciones::class, 'deduccion_id');
     }
-
-        public function empresa()
-    {
-        return $this->belongsTo(Empresa::class, );
-    }
 }
+

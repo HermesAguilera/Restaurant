@@ -29,11 +29,12 @@ class CategoriaProductoResource extends Resource
     protected static ?string $pluralModelLabel = 'Categorías de Productos';
     protected static ?string $modelLabel = 'Categoría de Producto';
     protected static ?string $navigationGroup = 'Inventario';
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?int $navigationSort = 1;
 
     public static function shouldRegisterNavigation(): bool
     {
-        return true;
+        return false;
     }
 
     public static function form(Form $form): Form
@@ -57,19 +58,8 @@ class CategoriaProductoResource extends Resource
                                 if ($context === 'edit') {
                                     return;
                                 }
-                                $empresaId = auth()->user()->empresa_id ?? null;
-                                if (!$empresaId && !(auth()->user()->is_root ?? false)) {
-                                    Notification::make()
-                                        ->title('Error')
-                                        ->body('No se puede crear una categoría sin una empresa asignada.')
-                                        ->danger()
-                                        ->persistent()
-                                        ->send();
-                                    $set('nombre', null);
-                                    return;
-                                }
+                                
                                 $existing = CategoriaProducto::where('nombre', $state)
-                                    ->when($empresaId, fn ($query) => $query->where('empresa_id', $empresaId))
                                     ->first();
                                 if ($existing) {
                                     Notification::make()

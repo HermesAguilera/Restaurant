@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Nominas extends Model
 {
     /** @use HasFactory<\Database\Factories\NominasFactory> */
-        use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'nominas';
 
@@ -37,12 +37,6 @@ class Nominas extends Model
         return $this->belongsTo(\App\Models\Empleado::class, 'empleado_id');
     }
 
-    // Relación con Empresa
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class, );
-    }
-
     protected static function boot()
     {
     parent::boot();
@@ -56,5 +50,5 @@ class Nominas extends Model
     {
         return $this->hasMany(DetalleNominas::class, 'nomina_id');
     }
-
 }
+

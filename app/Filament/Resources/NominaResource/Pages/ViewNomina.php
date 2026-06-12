@@ -7,7 +7,6 @@ use Filament\Resources\Pages\ViewRecord;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\View;
 use Filament\Pages\Actions\EditAction;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
@@ -68,10 +67,14 @@ class ViewNomina extends ViewRecord
             Section::make('Historial de Pagos de Empleados')
                 ->icon('heroicon-o-user-group')
                 ->schema([
-                    View::make('filament.nomina.tabla-empleados')
-                        ->viewData([
-                            'empleados' => $this->record->detalleNominas,
-                        ])
+                    Placeholder::make('empleados')
+                        ->content(function () {
+                            return $this->record->detalleNominas->map(function ($detalle) {
+                                $empleado = $detalle->empleado;
+                                $nombre = $empleado?->nombre ?? ('Empleado #' . ($empleado?->id ?? 'N/A'));
+                                return $nombre . ' - L. ' . number_format($detalle->sueldo_neto ?? 0, 2);
+                            })->implode("\n");
+                        })
                         ->columnSpan('full'),
                 ])
                 ->collapsible(),
@@ -131,8 +134,7 @@ class ViewNomina extends ViewRecord
     {
         $nomina = $this->record->load([
             'empresa',
-            'detalleNominas.empleado.persona',
-            'detalleNominas.empleado.departamento',
+            'detalleNominas.empleado',
             'detalleNominas.empleadoDeducciones.deduccion',
             'detalleNominas.empleadoPercepciones.percepcion',
         ]);
@@ -157,8 +159,6 @@ class ViewNomina extends ViewRecord
         $totalNomina = 0;
         foreach ($nomina->detalleNominas as $detalle) {
             $empleado = $detalle->empleado;
-            $persona = $empleado->persona ?? null;
-            $departamento = $empleado->departamento ?? null;
             $sueldoBruto = $detalle->sueldo_bruto ?? $empleado->salario;
             // Deducciones
             $deducciones = [];
@@ -236,16 +236,7 @@ class ViewNomina extends ViewRecord
                 }
             }
             // Nombre del empleado
-            $nombreEmpleado = 'Empleado #' . $empleado->id;
-            if ($persona) {
-                $nombres = [];
-                if (!empty($persona->primer_nombre)) $nombres[] = $persona->primer_nombre;
-                if (!empty($persona->segundo_nombre)) $nombres[] = $persona->segundo_nombre;
-                if (!empty($persona->primer_apellido)) $nombres[] = $persona->primer_apellido;
-                if (!empty($persona->segundo_apellido)) $nombres[] = $persona->segundo_apellido;
-                $nombreEmpleado = trim(implode(' ', $nombres));
-                if ($nombreEmpleado === '') $nombreEmpleado = 'Empleado #' . $empleado->id;
-            }
+            $nombreEmpleado = $empleado->nombre ?? ('Empleado #' . $empleado->id);
             $totalDeducciones = collect($deducciones)->sum(function($item) {
                 return (isset($item['aplicada']) && $item['aplicada']) ? ($item['valorCalculado'] ?? 0) : 0;
             });
@@ -253,7 +244,6 @@ class ViewNomina extends ViewRecord
                 'id' => $empleado->id,
                 'numero' => $empleado->numero_empleado,
                 'nombre' => $nombreEmpleado,
-                'departamento' => $departamento ? $departamento->nombre : '',
                 'salario' => $sueldoBruto,
                 'deduccionesArray' => $deducciones,
                 'deducciones' => $totalDeducciones,

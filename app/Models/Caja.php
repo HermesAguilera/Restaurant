@@ -27,11 +27,6 @@ class Caja extends Model
         'deleted_at' => 'datetime',
     ];
 
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class);
-    }
-
     public function cajaAperturas()
     {
         return $this->hasMany(CajaApertura::class);

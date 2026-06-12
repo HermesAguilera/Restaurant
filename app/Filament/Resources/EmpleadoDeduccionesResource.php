@@ -27,10 +27,10 @@ class EmpleadoDeduccionesResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('empleado_id')
+                    Select::make('empleado_id')
                     ->label('Empleado')
                     ->options(
-                        \App\Models\Empleado::all()->pluck('nombre_completo', 'id')
+                        \App\Models\Empleado::all()->pluck('nombre', 'id')
                     )
                     ->searchable()
                     ->required()
@@ -73,7 +73,7 @@ class EmpleadoDeduccionesResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('empleado.nombre_completo')
+                TextColumn::make('empleado.nombre')
                     ->label('Empleado')
                     ->sortable(),
 

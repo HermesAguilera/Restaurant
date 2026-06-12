@@ -28,6 +28,8 @@ class OrdenComprasResource extends Resource
     protected static ?string $model = OrdenCompras::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Compras';
+    protected static bool $shouldRegisterNavigation = false;
+    protected static ?int $navigationSort = 1;
     protected static ?string $navigationLabel = 'Órdenes de Compra';
     protected static ?string $pluralModelLabel = 'Órdenes de Compra';
     protected static ?string $modelLabel = 'Orden de Compra';
@@ -120,15 +122,6 @@ class OrdenComprasResource extends Resource
                                         Forms\Components\TextInput::make('persona_contacto')
                                             ->label('Persona de Contacto')
                                             ->maxLength(255),
-                                        Forms\Components\Select::make('empresa_id')
-                                            ->label('Empresa')
-                                            ->relationship('empresa', 'nombre')
-                                            ->searchable()
-                                            ->required()
-                                            ->default(fn () => Filament::auth()->user()?->empresa_id)
-                                            ->disabled(fn () => true)
-                                            ->dehydrated(true)
-                                            ->suffix(null),
                                         Forms\Components\Select::make('pais_id')
                                             ->label('País')
                                             ->searchable()
@@ -172,7 +165,7 @@ class OrdenComprasResource extends Resource
                                             ->body("El proveedor {$newProveedor->nombre_proveedor} ha sido creado con éxito.")
                                             ->success()
                                             ->send();
-                                        
+
                                         $set('proveedor_id', $newProveedor->id);
                                         $set('empresa_id', $newProveedor->empresa_id); // Asumiendo que la empresa se asigna automáticamente al crear
                                     })
@@ -184,23 +177,16 @@ class OrdenComprasResource extends Resource
                             ->live()
                             ->afterStateUpdated(function ($state, callable $set, $livewire) {
                                 $proveedor = Proveedores::find($state);
-                                $set('empresa_id', $proveedor?->empresa_id ?? null);
                                 $livewire->dispatch('updateFormState', [
                                     'proveedor_id' => $state,
-                                    'empresa_id' => $proveedor?->empresa_id ?? null,
                                 ]);
                             })
                             ->afterStateHydrated(function ($state, callable $set, $livewire) {
                                 $proveedor = Proveedores::find($state);
-                                $set('empresa_id', $proveedor?->empresa_id ?? null);
                                 $livewire->dispatch('updateFormState', [
                                     'proveedor_id' => $state,
-                                    'empresa_id' => $proveedor?->empresa_id ?? null,
                                 ]);
                             }),
-                        Forms\Components\Hidden::make('empresa_id')
-                            ->required()
-                            ->dehydrated(true),
                         Forms\Components\DatePicker::make('fecha_realizada')
                             ->label('Fecha Realizada')
                             ->required()
@@ -258,10 +244,6 @@ class OrdenComprasResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('proveedor.nombre_proveedor')
                     ->label('Proveedor')
-                    ->sortable()
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('empresa.nombre')
-                    ->label('Empresa')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('fecha_realizada')

@@ -33,12 +33,9 @@ class OrdenComprasInsumosResource extends Resource
 {
     protected static ?string $model = OrdenComprasInsumos::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationGroup = 'Órdenes de Producción';
-    protected static ?string $navigationLabel = 'Órdenes de Compra Insumos';
-    protected static ?string $pluralModelLabel = 'Órdenes de Compra Insumos';
-    protected static ?string $modelLabel = 'Orden de Compra Insumos';
-    protected static ?int $navigationSort = 3;
-    protected static bool $shouldRegisterNavigation = true;
+    protected static ?string $navigationGroup = 'Compras';
+    protected static ?int $navigationSort = 1;
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
     {
@@ -78,14 +75,6 @@ class OrdenComprasInsumosResource extends Resource
                                         Forms\Components\TextInput::make('persona_contacto')
                                             ->label('Persona de Contacto')
                                             ->maxLength(255),
-                                        Forms\Components\Select::make('empresa_id')
-                                            ->label('Empresa')
-                                            ->relationship('empresa', 'nombre')
-                                            ->searchable()
-                                            ->required()
-                                            ->default(fn () => Filament::auth()->user()?->empresa_id)
-                                            ->disabled()
-                                            ->dehydrated(true),
                                         Forms\Components\Select::make('pais_id')
                                             ->label('País')
                                             ->searchable()
@@ -129,34 +118,15 @@ class OrdenComprasInsumosResource extends Resource
                                             ->success()
                                             ->send();
                                         $set('proveedor_id', $newProveedor->id);
-                                        $set('empresa_id', $newProveedor->empresa_id);
                                     })
                                     ->slideOver()
                             )
                             ->reactive()
                             ->afterStateUpdated(function ($state, callable $set) {
                                 $proveedor = \App\Models\Proveedores::find($state);
-                                $empresaId = $proveedor?->empresa_id ?? (Auth::user()->empresa_id ?? \App\Models\Empresa::first()->id);
-                                $set('empresa_id', $empresaId);
                             })
                             ->columnSpan(1)
                             ->helperText('Seleccione el proveedor de la orden o cree uno nuevo.'),
-                        Forms\Components\Select::make('empresa_id')
-                            ->label('Empresa')
-                            ->options(\App\Models\Empresa::pluck('nombre', 'id'))
-                            ->required()
-                            ->default(function () {
-                                $empresaId = Auth::user()->empresa_id;
-                                if (!$empresaId) {
-                                    Log::warning('Usuario sin empresa_id asignado', ['user_id' => Auth::user()->id]);
-                                    $empresaId = \App\Models\Empresa::first()->id ?? null;
-                                }
-                                return $empresaId;
-                            })
-                            ->disabled()
-                            ->dehydrated(true)
-                            ->columnSpan(1)
-                            ->helperText('La empresa se asigna automáticamente según el proveedor.'),
                         Forms\Components\DatePicker::make('fecha_realizada')
                             ->label('Fecha')
                             ->required()
@@ -281,20 +251,19 @@ class OrdenComprasInsumosResource extends Resource
                                                     ),
                                                 Forms\Components\Select::make('categoria_id')
                                                     ->label('Categoría')
-                                                    ->relationship('categoria', 'nombre', function ($query, $get) {
+                                                    ->options(function ($get) {
                                                         $tipoOrdenId = $get('../../tipo_orden_compra_id');
-                                                        $searchTerm = null; // Inicializar $searchTerm
+                                                        $searchTerm = null;
                                                         if ($tipoOrdenId) {
                                                             $tipo = \App\Models\TipoOrdenCompras::find($tipoOrdenId);
                                                             $categoriaNombre = $tipo?->nombre ?? null;
                                                             $searchTerm = $categoriaNombre === 'Insumos' ? 'insumo' : strtolower($categoriaNombre);
+                                                        }
+                                                        $query = \App\Models\CategoriaProducto::query();
+                                                        if ($searchTerm) {
                                                             $query->whereRaw('LOWER(nombre) LIKE ?', ["%$searchTerm%"]);
                                                         }
-                                                        Log::info('Categorías cargadas para createProducto', [
-                                                            'tipo_orden_compra_id' => $tipoOrdenId,
-                                                            'search_term' => $searchTerm ?? 'none',
-                                                        ]);
-                                                        return $query;
+                                                        return $query->pluck('nombre', 'id');
                                                     })
                                                     ->required()
                                                     ->searchable()
@@ -379,23 +348,6 @@ class OrdenComprasInsumosResource extends Resource
                                                                         fn ($action) => $action->requiresConfirmation()->label('Eliminar Subcategoría')
                                                                     )
                                                                     ->extraAttributes(['class' => 'gap-4']),
-                                                                Forms\Components\Hidden::make('empresa_id')
-                                                                    ->default(function () {
-                                                                        $user = Filament::auth()->user();
-                                                                        if (!$user->empresa_id) {
-                                                                            Log::error('Usuario sin empresa_id al intentar crear categoría', ['user_id' => $user->id]);
-                                                                            Notification::make()
-                                                                                ->title('Error')
-                                                                                ->body('No se puede crear una categoría sin una empresa asignada.')
-                                                                                ->danger()
-                                                                                ->persistent()
-                                                                                ->send();
-                                                                            throw new \Exception('El usuario no tiene una empresa asignada.');
-                                                                        }
-                                                                        return $user->empresa_id;
-                                                                    })
-                                                                    ->required()
-                                                                    ->dehydrated(true),
                                                             ])
                                                             ->action(function (array $data, callable $set, $form, $get) {
                                                                 Log::info('Iniciando creación de categoría', ['data' => $data]);
@@ -517,23 +469,6 @@ class OrdenComprasInsumosResource extends Resource
                                                             $set('subcategoria_id', $state);
                                                         }
                                                     }),
-                                                Forms\Components\Hidden::make('empresa_id')
-                                                    ->default(function () {
-                                                        $user = Filament::auth()->user();
-                                                        if (!$user->empresa_id) {
-                                                            Log::error('Usuario sin empresa_id al intentar crear producto', ['user_id' => $user->id]);
-                                                            Notification::make()
-                                                                ->title('Error')
-                                                                ->body('No tienes una empresa asignada. Contacta al administrador.')
-                                                                ->danger()
-                                                                ->persistent()
-                                                                ->send();
-                                                            throw new \Exception('El usuario no tiene una empresa asignada.');
-                                                        }
-                                                        return $user->empresa_id;
-                                                    })
-                                                    ->required()
-                                                    ->dehydrated(true),
                                                 Forms\Components\TextInput::make('sku')
                                                     ->label('SKU')
                                                     ->maxLength(100)
@@ -667,7 +602,8 @@ class OrdenComprasInsumosResource extends Resource
                                     ])
                                     ->columns(2)
                                     ->collapsible()
-                                    ->visible(fn ($get) => \App\Filament\Resources\OrdenComprasInsumosResource\RelationManagers\DetallesRelationManager::esMateriaPrima($get('tipo_orden_compra_id')))
+                                    ->visible(fn ($get) => 
+                                    \App\Filament\Resources\OrdenComprasInsumosResource\RelationManagers\DetallesRelationManager::esMateriaPrima($get('tipo_orden_compra_id')))
                                     ->columnSpanFull(),
                             ])
                             ->grid([
@@ -700,10 +636,6 @@ class OrdenComprasInsumosResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('proveedor.nombre_proveedor')
                     ->label('Proveedor')
-                    ->sortable()
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('empresa.nombre')
-                    ->label('Empresa')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('detalles_count')
@@ -769,14 +701,14 @@ class OrdenComprasInsumosResource extends Resource
                         ->color('success')
                         ->hidden(fn (OrdenComprasInsumos $record): bool => $record->estado === 'Recibida')
                         ->url(fn (OrdenComprasInsumos $record): string => \App\Filament\Pages\RecibirOrdenCompraInsumos::getUrl(['orden_id' => $record->id])),
-                    Tables\Actions\Action::make('generatePdf')
+                        Tables\Actions\Action::make('generatePdf')
                         ->label('Generar PDF')
                         ->icon('heroicon-o-document-arrow-down')
                         ->color('primary')
                         ->hidden(fn (OrdenComprasInsumos $record): bool => $record->estado !== 'Recibida')
                         ->action(function (OrdenComprasInsumos $record) {
                             $pdf = Pdf::loadView('pdf.orden-compra-insumos', [
-                                'orden' => $record->load(['empresa', 'proveedor', 'detalles.producto', 'detalles.tipoOrdenCompra']),
+                                'orden' => $record->load(['proveedor', 'detalles.producto', 'detalles.tipoOrdenCompra']),
                                 'fechaGeneracion' => now()->format('d/m/Y H:i:s'),
                             ]);
                             return response()->streamDownload(function () use ($pdf) {

@@ -27,11 +27,6 @@ class Percepciones extends Model
 
     public function percepcionesAplicadas()
     {
-        return $this->hasMany(EmpleadoPercepciones::class, 'empleado_id')->with('deduccion');
-    }
-
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class, );
+        return $this->hasMany(EmpleadoPercepciones::class, 'percepcion_id')->with('percepcion');
     }
 }

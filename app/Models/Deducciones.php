@@ -27,11 +27,6 @@ class Deducciones extends Model
 
     public function deduccionesAplicadas()
     {
-        return $this->hasMany(EmpleadoDeducciones::class, 'empleado_id')->with('deduccion');
-    }
-
-        public function empresa()
-    {
-        return $this->belongsTo(Empresa::class, );
+        return $this->hasMany(EmpleadoDeducciones::class, 'deduccion_id')->with('deduccion');
     }
 }

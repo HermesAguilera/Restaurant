@@ -43,11 +43,11 @@ class MovimientoInventarioResource extends Resource
     protected static ?string $navigationLabel = 'Movimientos de Inventario';
     protected static ?string $pluralLabel = 'Movimientos de Inventario';
     protected static ?string $label = 'Movimiento de Inventario';
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->where('empresa_id', auth()->user()->empresa_id);
+        return parent::getEloquentQuery();
     }
 
     public static function form(Form $form): Form

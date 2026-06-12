@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\FacturaCajaResource\Pages;
 use App\Models\Factura;
+use App\Models\Empleado;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -19,67 +20,62 @@ use Filament\Forms\Components\DatePicker;
 class FacturaCajaResource extends Resource
 {
     protected static ?string $model = Factura::class;
-
-    // --- Configuración del Menú (Este es el historial) ---
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
     protected static ?string $navigationLabel = 'Historial de Facturas';
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationGroup = 'Ventas';
     protected static ?string $slug = 'historial-facturas';
 
-    /**
-     * ¡CAMBIO IMPORTANTE!
-     * Copiamos la misma definición del formulario de FacturaResource
-     * para que la página de edición sea idéntica.
-     */
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Información General')
-                    ->schema([
-                        Forms\Components\Select::make('cliente_id')
-                            ->relationship('cliente.persona', 'primer_nombre') // Usamos relationship para eficiencia
-                            ->label('Cliente')
-                            ->disabled(),
+        return $form->schema([
+            Forms\Components\Section::make('InformaciÃ³n General')
+                ->schema([
+                    Forms\Components\TextInput::make('nombre_cliente')
+                        ->label('Cliente')
+                        ->disabled(),
 
-                        Forms\Components\Select::make('empleado_id')
-                            ->relationship('empleado.persona', 'primer_nombre') // Usamos relationship
-                            ->label('Vendedor')
-                            ->disabled(),
+                    Forms\Components\Select::make('empleado_id')
+                        ->label('Vendedor')
+                        ->options(
+                            Empleado::with('persona')
+                                ->get()
+                                ->mapWithKeys(function ($empleado) {
+                                    $nombre = trim(($empleado->persona->primer_nombre ?? '') . ' ' . ($empleado->persona->primer_apellido ?? ''));
+                                    return [$empleado->id => $nombre !== '' ? $nombre : ('Empleado #' . $empleado->id)];
+                                })
+                        )
+                        ->disabled(),
 
-                        Forms\Components\DatePicker::make('fecha_factura')
-                            ->disabled(),
+                    Forms\Components\DatePicker::make('fecha_factura')
+                        ->disabled(),
 
-                        // Este es el único campo editable
-                        Forms\Components\Select::make('estado')
-                            ->options([
-                                'Pendiente' => 'Pendiente',
-                                'Pagada' => 'Pagada',
-                                'Anulada' => 'Anulada',
-                                'Vencida' => 'Vencida',
-                            ])
-                            ->required(),
-                    ])->columns(2),
+                    Forms\Components\Select::make('estado')
+                        ->options([
+                            'Pendiente' => 'Pendiente',
+                            'Pagada' => 'Pagada',
+                            'Anulada' => 'Anulada',
+                            'Vencida' => 'Vencida',
+                        ])
+                        ->required(),
+                ])->columns(2),
 
-                Forms\Components\Section::make('Totales')
-                    ->schema([
-                        Forms\Components\TextInput::make('subtotal')->numeric()->prefix('L.')->disabled(),
-                        Forms\Components\TextInput::make('impuestos')->numeric()->prefix('L.')->disabled(),
-                        Forms\Components\TextInput::make('total')->numeric()->prefix('L.')->disabled(),
-                    ])->columns(3),
-            ]);
+            Forms\Components\Section::make('Totales')
+                ->schema([
+                    Forms\Components\TextInput::make('subtotal')->numeric()->prefix('L.')->disabled(),
+                    Forms\Components\TextInput::make('impuestos')->numeric()->prefix('L.')->disabled(),
+                    Forms\Components\TextInput::make('total')->numeric()->prefix('L.')->disabled(),
+                ])->columns(3),
+        ]);
     }
 
-    /**
-     * La tabla ahora incluirá la acción de editar.
-     */
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label('N° Factura')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('cliente.persona.primer_nombre')->label('Cliente'),
+                Tables\Columns\TextColumn::make('id')->label('NÂ° Factura')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('nombre_cliente')->label('Cliente'),
                 Tables\Columns\TextColumn::make('empleado.persona.primer_nombre')->label('Vendedor'),
                 Tables\Columns\TextColumn::make('estado')
                     ->badge()
@@ -94,7 +90,6 @@ class FacturaCajaResource extends Resource
                 Tables\Columns\TextColumn::make('fecha_factura')->date('d/m/Y')->sortable(),
             ])
             ->filters([
-                // Estado (multi)
                 SelectFilter::make('estado')
                     ->label('Estado')
                     ->multiple()
@@ -105,7 +100,6 @@ class FacturaCajaResource extends Resource
                         'Vencida'   => 'Vencida',
                     ]),
 
-                // Con / sin CAI
                 TernaryFilter::make('con_cai')
                     ->label('¿Con CAI?')
                     ->placeholder('Todas')
@@ -117,7 +111,6 @@ class FacturaCajaResource extends Resource
                         blank: fn (Builder $q) => $q
                     ),
 
-                // Rango de fechas
                 Filter::make('fecha_factura')
                     ->label('Fecha')
                     ->form([
@@ -148,32 +141,22 @@ class FacturaCajaResource extends Resource
             ->defaultSort('id', 'desc');
     }
 
-    /**
-     * Registramos la página de edición.
-     */
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListFacturaCajas::route('/'),
             'view'  => Pages\ViewFacturaCaja::route('/{record}'),
-            // ¡CAMBIO IMPORTANTE! Se añade la ruta para la página de edición
             'edit'  => Pages\EditFacturaCaja::route('/{record}/edit'),
         ];
     }
 
-    /**
-     * El historial no debe permitir crear nuevas facturas desde aquí.
-     */
     public static function canCreate(): bool
     {
         return false;
     }
 
-    /**
-     * Nos aseguramos de que no haya filtros y se muestren todas las facturas.
-     */
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['cliente.persona', 'empleado.persona']);
+        return parent::getEloquentQuery()->with(['empleado.persona']);
     }
 }

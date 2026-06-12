@@ -24,6 +24,7 @@ class TipoOrdenComprasResource extends Resource
     protected static ?string $pluralModelLabel = 'Tipos de Orden de Compra';
     protected static ?string $modelLabel = 'Tipo de Orden de Compra';
     protected static ?string $navigationGroup = 'Compras';
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form

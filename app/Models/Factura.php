@@ -67,8 +67,4 @@ class Factura extends Model
         return $this->belongsTo(Cai::class);
     }
 
-    public function pagos()
-    {
-        return $this->hasMany(Pago::class);
-    }
 }

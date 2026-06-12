@@ -47,11 +47,6 @@ class OrdenCompras extends Model
         return $this->belongsTo(Proveedores::class, 'proveedor_id');
     }
 
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class, );
-    }
-
     public function getTipoOrdenNombreAttribute()
     {
         return $this->tipoOrdenCompra ? $this->tipoOrdenCompra->nombre : 'N/A';

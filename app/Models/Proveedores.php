@@ -32,11 +32,6 @@ class Proveedores extends Model
         return $this->belongsTo(Municipio::class);
     }
 
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class);
-    }
-
     public function creadoPor()
     {
         return $this->belongsTo(User::class, 'created_by');

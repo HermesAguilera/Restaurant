@@ -2,31 +2,55 @@
     {{-- Wrapper principal con height controlado --}}
     <div class="flex flex-col gap-6">
 
-        {{-- ═══════════════════════════════════════════════════════════════
-             SECCIÓN 1: POS (MENÚ + CARRITO)
-        ═══════════════════════════════════════════════════════════════ --}}
+        {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+             SECCIÃ“N 1: CAJA/POS (MENÃš + CARRITO)
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
         <div class="flex gap-4" style="min-height:65vh">
 
-            {{-- ── IZQUIERDA: MENÚ ── --}}
+            {{-- â”€â”€ IZQUIERDA: MENÃš â”€â”€ --}}
             <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-                {{-- Filtros de categoría --}}
-                @if(count($this->categorias) > 0)
-                <div class="flex flex-wrap gap-2 mb-4">
+                {{-- SelecciÃ³n de SecciÃ³n --}}
+                <div class="flex gap-2 mb-4">
                     <button
-                        wire:click="$set('filtro_categoria', '')"
-                        class="px-4 py-1.5 rounded-full text-sm font-semibold transition
-                            {{ $filtro_categoria === '' ? 'bg-primary-600 text-white shadow' : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
-                    >Todos</button>
-                    @foreach($this->categorias as $cat)
+                        wire:click="$set('filtro_seccion', 'comida'); $set('subfiltro_cocina', 'todos'); $set('busqueda', ''); $set('filtro_categoria', '')"
+                        class="px-6 py-2 rounded-xl font-bold transition
+                            {{ $filtro_seccion === 'comida' ? 'bg-primary-600 text-white shadow' : 'bg-white dark:bg-gray-800 border dark:border-gray-700 text-gray-700 dark:text-gray-300' }}"
+                    >Comidas</button>
                     <button
-                        wire:click="$set('filtro_categoria', '{{ $cat }}')"
-                        class="px-4 py-1.5 rounded-full text-sm font-semibold transition
-                            {{ $filtro_categoria === $cat ? 'bg-primary-600 text-white shadow' : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
-                    >{{ $cat }}</button>
-                    @endforeach
+                        wire:click="$set('filtro_seccion', 'bebida'); $set('subfiltro_cocina', 'todos'); $set('busqueda', ''); $set('filtro_categoria', '')"
+                        class="px-6 py-2 rounded-xl font-bold transition
+                            {{ $filtro_seccion === 'bebida' ? 'bg-primary-600 text-white shadow' : 'bg-white dark:bg-gray-800 border dark:border-gray-700 text-gray-700 dark:text-gray-300' }}"
+                    >Bebidas</button>
                 </div>
-                @endif
+
+                {{-- Subfiltros y BÃºsqueda --}}
+                <div class="flex flex-wrap items-center gap-2 mb-4">
+                    @if($filtro_seccion === 'comida')
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(['todos' => 'Todos', 'general' => 'Gral', 'china' => 'China', 'pizza' => 'Pizza'] as $key => $label)
+                                <button
+                                    wire:click="$set('subfiltro_cocina', '{{ $key }}')"
+                                    class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
+                                        {{ $subfiltro_cocina === $key ? 'bg-primary-600 text-white shadow' : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300' }}"
+                                >{{ $label }}</button>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <div class="relative flex-1 min-w-[200px]">
+    <div class="absolute inset-y-0 flex items-center pointer-events-none z-10" style="left: 14px;">
+        <x-heroicon-o-magnifying-glass class="w-4 h-4 text-gray-400 dark:text-gray-500"/>
+    </div>
+    <input
+        type="text"
+        wire:model.live.debounce.300ms="busqueda"
+        placeholder="Buscar..."
+        style="padding-left: 42px !important;"
+        class="w-full pr-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm transition"
+    />
+</div>
+                </div>
 
                 {{-- Grid de platillos --}}
                 <div class="flex-1 overflow-y-auto pr-1">
@@ -34,7 +58,7 @@
                         <div class="flex flex-col items-center justify-center h-48 text-gray-400">
                             <x-heroicon-o-clipboard-document-list class="w-14 h-14 mb-3"/>
                             <p class="font-semibold">No hay platillos disponibles</p>
-                            <p class="text-sm mt-1 text-center">Ve a <strong>Restaurante → Platillos del Menú</strong> para agregarlos.</p>
+                            <p class="text-sm mt-1 text-center">Ve a <strong>Restaurante â†’ Platillos del MenÃº</strong> para agregarlos.</p>
                         </div>
                     @else
                         <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -58,13 +82,15 @@
                 </div>
             </div>
 
-            {{-- ── DERECHA: CARRITO / ORDEN ── --}}
+            {{-- â”€â”€ DERECHA: CARRITO / ORDEN â”€â”€ --}}
             <div class="w-80 flex flex-col bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex-shrink-0">
 
                 {{-- Header --}}
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60">
-                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">Orden Actual</h2>
-                    <div class="mt-2">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60 space-y-3">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">Orden actual en Caja/POS</h2>
+
+                    {{-- Input del Cliente --}}
+                    <div>
                         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Cliente</label>
                         <input
                             type="text"
@@ -73,6 +99,64 @@
                             class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
                         />
                     </div>
+
+                    {{-- Selección de Tipo de Orden --}}
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Tipo de orden en Caja/POS</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            {{-- Botón Comer Aquí --}}
+                            <button
+                                type="button"
+                                wire:click="$set('tipo_orden', 'restaurante')"
+                                class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg border transition shadow-sm
+                                    {{ $tipo_orden === 'restaurante'
+                                        ? 'bg-primary-600 text-white border-primary-600'
+                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                            >
+                                <x-heroicon-m-building-storefront class="w-4 h-4"/>
+                                Comer Aquí
+                            </button>
+
+                            {{-- Botón Para Llevar --}}
+                            <button
+                                type="button"
+                                wire:click="$set('tipo_orden', 'llevar'); $set('mesa', '')"
+                                class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg border transition shadow-sm
+                                    {{ $tipo_orden === 'llevar'
+                                        ? 'bg-primary-600 text-white border-primary-600'
+                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                            >
+                                <x-heroicon-m-shopping-bag class="w-4 h-4"/>
+                                Para Llevar
+                            </button>
+                        </div>
+                    </div>
+
+                    @if($tipo_orden === 'restaurante')
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Mesa</label>
+                        <input
+                            type="text"
+                            wire:model.blur="mesa"
+                            placeholder="Opcional"
+                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
+                        />
+                    </div>
+                    @endif
+
+                    {{-- Input de Comensales (Solo se muestra si es Restaurante) --}}
+                    @if($tipo_orden === 'restaurante')
+                    <div class="pt-1">
+                        <label for="numero_personas" class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Número de Personas</label>
+                        <input
+                            type="number"
+                            id="numero_personas"
+                            wire:model.live="numero_personas"
+                            min="1"
+                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
+                        />
+                    </div>
+                    @endif
                 </div>
 
                 {{-- Items del carrito --}}
@@ -147,9 +231,9 @@
             </div>
         </div>
 
-        {{-- ═══════════════════════════════════════════════════════════════
-             SECCIÓN 2: ÓRDENES PENDIENTES DEL DÍA
-        ═══════════════════════════════════════════════════════════════ --}}
+        {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+             SECCIÃ“N 2: Ã“RDENES PENDIENTES DEL DÃA EN CAJA/POS
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
         <div wire:poll.8s class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -175,6 +259,7 @@
                             <tr class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-700">
                                 <th class="px-4 py-3">#</th>
                                 <th class="px-4 py-3">Cliente</th>
+                                <th class="px-4 py-3">Mesa</th>
                                 <th class="px-4 py-3">Platillos</th>
                                 <th class="px-4 py-3">Total</th>
                                 <th class="px-4 py-3">Estado</th>
@@ -186,11 +271,14 @@
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition">
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm
-                                        {{ $orden->estado === 'en_cocina' ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }}">
+                                        {{ $orden->entregado_at ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }}">
                                         {{ $orden->numero_dia }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $orden->nombre_cliente }}</td>
+                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+                                    {{ $orden->mesa ?: 'Sin mesa' }}
+                                </td>
                                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
                                     @foreach($orden->detalles as $d)
                                         <span class="inline-block">{{ $d->cantidad }}× {{ $d->platillo?->nombre ?? '?' }}</span>@if(!$loop->last), @endif
@@ -201,11 +289,39 @@
                                 </td>
                                 <td class="px-4 py-3 font-bold text-gray-900 dark:text-white">L. {{ number_format($orden->total, 2) }}</td>
                                 <td class="px-4 py-3">
-                                    @if($orden->estado === 'pendiente')
-                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">⏳ Pendiente</span>
-                                    @elseif($orden->estado === 'en_cocina')
-                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">🔥 En Cocina</span>
-                                    @endif
+                                    <div class="flex flex-wrap items-center gap-3">
+                                    <button
+                                        wire:click="mountAction('viewOrder', { orderId: {{ $orden->id }} })"
+                                        class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                                    >
+                                        <x-heroicon-o-eye class="h-4 w-4" />
+                                        Ver detalle
+                                    </button>
+                                    <button
+                                        wire:click="mountAction('editOrder', { orderId: {{ $orden->id }} })"
+                                        style="background:#2563eb !important;color:#ffffff !important;border:1px solid #1d4ed8 !important;"
+                                        class="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold shadow-sm transition hover:-translate-y-0.5"
+                                    >
+                                        <x-heroicon-o-pencil-square class="h-4 w-4" />
+                                        Editar
+                                    </button>
+                                    <button
+                                        wire:click="marcarComoEntregada({{ $orden->id }})"
+                                        style="background:#059669 !important;color:#ffffff !important;border:1px solid #047857 !important;"
+                                        class="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold shadow-sm transition hover:-translate-y-0.5"
+                                    >
+                                        <x-heroicon-o-check class="h-4 w-4" />
+                                        Entregar
+                                    </button>
+                                    <button
+                                        wire:click="mountAction('deleteOrder', { orderId: {{ $orden->id }} })"
+                                        style="background:#e11d48 !important;color:#ffffff !important;border:1px solid #be123c !important;"
+                                        class="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold shadow-sm transition hover:-translate-y-0.5"
+                                    >
+                                        <x-heroicon-o-trash class="h-4 w-4" />
+                                        Eliminar
+                                    </button>
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{{ $orden->created_at->format('h:i A') }}</td>
                             </tr>
@@ -215,5 +331,53 @@
                 </div>
             @endif
         </div>
+
+        {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+             SECCIÃ“N 3: Ã“RDENES ENTREGADAS HOY
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
+        <div wire:poll.15s class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <x-heroicon-o-check-circle class="w-5 h-5 text-green-500"/>
+                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Órdenes Entregadas Hoy</h2>
+                </div>
+                @if($this->ordenesEntregadas->count() > 0)
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                    {{ $this->ordenesEntregadas->count() }} entregada(s)
+                </span>
+                @endif
+            </div>
+
+            @if($this->ordenesEntregadas->isEmpty())
+                <div class="py-6 text-center text-gray-400 dark:text-gray-500 text-sm">
+                    No hay órdenes entregadas aún.
+                </div>
+            @else
+                <div class="max-h-60 overflow-y-auto">
+                    <table class="w-full text-sm">
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @foreach($this->ordenesEntregadas as $orden)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                                <td class="px-4 py-2 font-bold text-gray-500 dark:text-gray-400">#{{ $orden->numero_dia }}</td>
+                                <td class="px-4 py-2 text-gray-900 dark:text-white">{{ $orden->nombre_cliente }}</td>
+                                <td class="px-4 py-2">
+                                    <button
+                                        wire:click="mountAction('viewOrder', { orderId: {{ $orden->id }} })"
+                                        class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-200 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                                    >
+                                        <x-heroicon-o-eye class="h-4 w-4" />
+                                        Ver detalle
+                                    </button>
+                                </td>
+                                <td class="px-4 py-2 text-gray-500 dark:text-gray-400 text-xs text-right">{{ $orden->updated_at->format('h:i A') }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
     </div>
+
+    <x-filament-actions::modals />
 </x-filament-panels::page>

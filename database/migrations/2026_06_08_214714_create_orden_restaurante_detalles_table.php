@@ -19,6 +19,8 @@ return new class extends Migration
             $table->decimal('precio_unitario', 10, 2);
             $table->decimal('subtotal', 10, 2);
             $table->text('notas')->nullable();
+            $table->string('tipo_orden')->default('restaurante'); // 'restaurante' o 'llevar'
+            $table->integer('numero_personas')->default(1);
             $table->timestamps();
         });
     }

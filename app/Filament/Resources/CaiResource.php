@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CaiResource\Pages;
 use App\Filament\Resources\CaiResource\RelationManagers;
 use App\Models\Cai;
-use App\Models\Empresa; 
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -29,6 +28,7 @@ class CaiResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text'; // Icono más descriptivo para CAI
     protected static ?string $navigationGroup = 'Ventas'; // O el grupo de navegación que prefieras
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?int $navigationSort = 1;
     
 
@@ -46,21 +46,6 @@ class CaiResource extends Resource
                                 $operation === 'edit' && $record?->facturas()->exists()
                             )
                             ->maxLength(255),
-
-                        Select::make('empresa_id')
-                            ->label('Empresa')
-                            ->searchable()
-                            ->options(function () {
-                                if (auth()->user()->hasRole('root')) {
-                                    return \App\Models\Empresa::pluck('nombre', 'id')->toArray();
-                                }
-                                $empresa = auth()->user()->empresa;
-                                return $empresa ? [$empresa->id => $empresa->nombre] : [];
-                            })
-                            ->default(fn () => auth()->user()->empresa_id)
-                            ->dehydrated(true) // <-- clave
-                            ->disabled(fn () => !auth()->user()->hasRole('root'))
-                            ->required(),
 
                         TextInput::make('establecimiento')
                             ->label('Establecimiento')
@@ -144,12 +129,6 @@ class CaiResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('empresa.nombre')
-                    ->label('Empresa')
-                    ->searchable()
-                    ->sortable()
-                    ->visible(fn () => auth()->user()?->hasRole('root')), // Solo root mira esto
-
                 TextColumn::make('rango_inicial')
                     ->label('Rango Inicial')
                     ->numeric()
@@ -182,11 +161,6 @@ class CaiResource extends Resource
                         false => 'Inactivo',
                     ])
                     ->label('Estado'),
-                SelectFilter::make('empresa_id')
-                    ->label('Empresa')
-                    ->options(Empresa::pluck('nombre', 'id'))
-                    ->searchable()
-                    ->visible(fn () => auth()->user()?->hasRole('root')), // <-- CAMBIO AQUÍ: Filtro visible solo para rol 'root'
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([

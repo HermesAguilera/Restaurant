@@ -19,26 +19,4 @@ class CreateCai extends CreateRecord
         return 'Cai Creado';
     }
 
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        if (auth()->user()->hasRole('root')) {
-            if (empty($data['empresa_id'])) {
-                throw ValidationException::withMessages([
-                    'empresa_id' => 'Seleccione una empresa.',
-                ]);
-            }
-            return $data;
-        }
-
-        $empresaId = auth()->user()->empresa_id;
-        if (!$empresaId) {
-            throw ValidationException::withMessages([
-                'empresa_id' => 'Tu usuario no tiene una empresa asignada.',
-            ]);
-        }
-
-        $data['empresa_id'] = $empresaId;
-        return $data;
-    }
-
 }

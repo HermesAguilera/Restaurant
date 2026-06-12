@@ -44,9 +44,4 @@ class EmpleadoPercepciones extends Model
     {
         return $this->belongsTo(Percepciones::class, 'percepcion_id');
     }
-
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class, );
-    }
 }

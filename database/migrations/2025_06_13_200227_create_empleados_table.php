@@ -19,7 +19,6 @@ return new class extends Migration
             $table->json('deducciones_aplicables')->nullable();
 
             $table->string('nombre', 255);
-            $table->foreignId('departamento_empleado_id')->constrained('departamento_empleados');
             $table->foreignId('tipo_empleado_id')->constrained('tipo_empleados');
 
             $table->timestamps();

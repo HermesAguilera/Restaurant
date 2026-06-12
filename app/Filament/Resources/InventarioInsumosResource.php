@@ -22,9 +22,9 @@ class InventarioInsumosResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
     protected static ?string $navigationLabel = 'Gestión de Inventario Insumos';
     protected static ?string $modelLabel = 'Inventario de Insumos';
-    protected static ?string $navigationGroup = 'Órdenes de Producción';
-    protected static ?int $navigationSort = 2;
-    protected static bool $shouldRegisterNavigation = true;
+    protected static ?string $navigationGroup = 'Insumos y materia prima';
+    protected static ?int $navigationSort = 1;
+    protected static bool $shouldRegisterNavigation = false;
 
 
     public static function canCreate(): bool
@@ -40,15 +40,6 @@ class InventarioInsumosResource extends Resource
                     ->icon('heroicon-o-information-circle')
                     ->description('Detalles del insumo en inventario.')
                     ->schema([
-                        Forms\Components\Select::make('empresa_id')
-                            ->label('Empresa')
-                            ->relationship('empresa', 'nombre')
-                            ->searchable()
-                            ->required()
-                            ->hidden()
-                            ->default(fn () => Filament::auth()->user()?->empresa_id)
-                            ->disabled()
-                            ->dehydrated(true),
                         Forms\Components\Select::make('producto_id')
                             ->relationship('producto', 'nombre')
                             ->label('Insumo')
@@ -90,11 +81,6 @@ class InventarioInsumosResource extends Resource
                     ->sortable()
                     ->description(fn ($record) => $record->producto->descripcion_corta ?? '')
                     ->tooltip('Nombre del insumo.'),
-                TextColumn::make('empresa.nombre')
-                    ->label('Empresa')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('cantidad')
                     ->numeric()
                     ->sortable()

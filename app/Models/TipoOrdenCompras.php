@@ -28,11 +28,6 @@ class TipoOrdenCompras extends Model
         'deleted_at' => 'datetime',
     ];
 
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class, );
-    }
-
     public function creadoPor()
     {
         return $this->belongsTo(User::class, 'created_by');

@@ -39,14 +39,6 @@ class DeduccionesResource extends Resource
                     ->required()
                     ->reactive(),
 
-                Forms\Components\Select::make('empresa_id')
-                    ->label('Empresa')
-                    ->relationship('empresa', 'nombre')
-                    ->default(fn () => Filament::auth()->user()?->empresa_id)
-                    ->hidden()
-                    ->required()
-                    ->dehydrated(true),
-
                 TextInput::make('valor')
                     ->label('Valor')
                     ->numeric()

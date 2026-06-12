@@ -28,9 +28,6 @@ class CajaResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Datos de la Caja')
                     ->schema([
-                        Forms\Components\Hidden::make('empresa_id')
-                            ->default(fn () => auth()->user()?->empresa_id),
-
                         Forms\Components\TextInput::make('nombre')
                             ->label('Nombre')
                             ->required()
@@ -60,7 +57,6 @@ class CajaResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
                 Tables\Columns\TextColumn::make('nombre')->label('Nombre')->searchable(),
-                Tables\Columns\TextColumn::make('empresa.nombre')->label('Empresa')->searchable(),
                 Tables\Columns\TextColumn::make('estado')
                     ->badge()
                     ->color(fn (string $state) => match ($state) {
@@ -102,6 +98,6 @@ class CajaResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['empresa']);
+        return parent::getEloquentQuery();
     }
 }

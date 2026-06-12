@@ -20,7 +20,6 @@ class CaiSeeder extends Seeder
 
         foreach ($empresas as $empresa) {
             Cai::create([
-                'empresa_id'            => $empresa->id,
                 'establecimiento'       => '001',
                 'punto_emision'         => '001',
                 'tipo_documento'        => '01', // 01 = Factura, 03 = Nota crédito, etc.

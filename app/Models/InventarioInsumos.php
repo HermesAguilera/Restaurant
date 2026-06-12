@@ -26,11 +26,6 @@ class InventarioInsumos extends Model
         'deleted_at' => 'datetime',
     ];
 
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class, );
-    }
-
     public function producto()
     {
         return $this->belongsTo(Productos::class, 'producto_id');

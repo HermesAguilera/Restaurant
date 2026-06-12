@@ -31,6 +31,16 @@ class PlatilloResource extends Resource
                     ->placeholder('Ej: Pollo a la plancha')
                     ->columnSpan(2),
 
+                Forms\Components\Select::make('tipo')
+                    ->label('Tipo')
+                    ->options([
+                        'comida' => 'Comida',
+                        'bebida' => 'Bebida',
+                    ])
+                    ->default('comida')
+                    ->live()
+                    ->required(),
+
                 Forms\Components\Select::make('categoria')
                     ->label('Categoría')
                     ->options([
@@ -42,7 +52,19 @@ class PlatilloResource extends Resource
                         'Extras'        => 'Extras',
                     ])
                     ->searchable()
-                    ->required(),
+                    ->required()
+                    ->hidden(fn (Forms\Get $get) => $get('tipo') === 'bebida'),
+
+                Forms\Components\Select::make('seccion')
+                    ->label('Sección de Cocina')
+                    ->options([
+                        'general' => 'Comida General',
+                        'china'   => 'Comida China',
+                        'pizza'   => 'Pizza',
+                    ])
+                    ->default('general')
+                    ->required()
+                    ->hidden(fn (Forms\Get $get) => $get('tipo') === 'bebida'),
 
                 Forms\Components\TextInput::make('precio')
                     ->label('Precio (L.)')
@@ -80,6 +102,18 @@ class PlatilloResource extends Resource
                         default          => 'gray',
                     })
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('seccion')
+                    ->label('Sección')
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'general' => 'gray',
+                        'china'   => 'danger',
+                        'pizza'   => 'warning',
+                        default   => 'gray',
+                    })
+                    ->sortable(),
+
 
                 Tables\Columns\TextColumn::make('nombre')
                     ->label('Nombre')

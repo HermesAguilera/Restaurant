@@ -21,8 +21,6 @@ class Empleado extends Model
         'salario',
         'deducciones_aplicables',
         'nombre',
-        'departamento_empleado_id', // FK a departamentos_empleados
-        
         'tipo_empleado_id',
         'created_by',
         'updated_by',
@@ -49,7 +47,7 @@ class Empleado extends Model
 
     public function detalleNominas()
     {
-        return $this->hasMany(DetalleNomina::class, 'empleado_id');
+        return $this->hasMany(DetalleNominas::class, 'empleado_id');
     }
 
     // Relación con empleado_deducciones (1 empleado puede tener muchas deducciones)

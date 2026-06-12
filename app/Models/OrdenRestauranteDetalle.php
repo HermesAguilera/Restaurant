@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class OrdenRestauranteDetalle extends Model
 {
     protected $fillable = [
-        'orden_restaurante_id', 'platillo_id', 'cantidad', 'precio_unitario', 'subtotal', 'notas'
+        'orden_restaurante_id', 'platillo_id', 'cantidad', 'precio_unitario', 'subtotal', 'notas', 'tipo_orden', 'numero_personas'
     ];
 
     public function orden()
