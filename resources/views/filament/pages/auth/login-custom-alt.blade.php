@@ -1,152 +1,109 @@
 @php
     $heading = $this->getHeading();
-    $cardWidth = 'md';
 @endphp
 
-<x-filament-panels::page.simple class="login-page">
-    
-    <!-- Efecto de burbujas flotantes (enviado al fondo) -->
-    <div class="bubbles-container">
-        @for ($i = 1; $i <= 15; $i++)
-            <div class="bubble"></div>
-        @endfor
-    </div>
-    
-    <!-- Contenido del Login integrado en la tarjeta de Filament -->
-    <div class="glass-card-content">
-        <div class="flex justify-center mb-4">
-            <img src="https://jadehsystem.com/images/Logo.png" alt="JADEH" class="h-6 w-16 object-contain" />
+@extends('layouts.auth')
+
+@section('content')
+    <div class="login-shell">
+        <div class="bubbles-container" aria-hidden="true">
+            @for ($i = 1; $i <= 15; $i++)
+                <span class="bubble"></span>
+            @endfor
         </div>
-        
-        <div class="mb-4 text-center">
-            <h2 class="text-xl font-bold text-gray-800">Bienvenido</h2>
-            <p class="text-sm text-gray-600">Ingresa tus credenciales para continuar</p>
+
+        <div class="glass-card-content">
+            <div class="flex justify-center mb-4">
+                <img src="{{ asset('images/JADE.png') }}" alt="JADEH" class="h-16 w-auto object-contain" />
+            </div>
+
+            <div class="mb-6 text-center">
+                <h2 class="text-3xl font-bold text-slate-900">Bienvenido</h2>
+                <p class="mt-2 text-sm text-slate-600">Ingresa tus credenciales para continuar</p>
+            </div>
+
+            <x-filament-panels::form wire:submit="authenticate">
+                {{ $this->form }}
+
+                <x-filament-panels::form.actions
+                    :actions="$this->getCachedFormActions()"
+                    :full-width="$this->hasFullWidthFormActions()"
+                />
+            </x-filament-panels::form>
         </div>
-        
-        <!-- Formulario estándar de Filament que se auto-integra con Livewire -->
-        <x-filament-panels::form wire:submit="authenticate">
-            {{ $this->form }}
-            <x-filament-panels::form.actions
-                :actions="$this->getCachedFormActions()"
-                :full-width="$this->hasFullWidthFormActions()"
-            />
-        </x-filament-panels::form>
     </div>
-    
+
     <style>
-        /* Aplicamos el fondo animado al cuerpo del documento */
-        body, html {
+        html, body {
+            min-height: 100%;
+        }
+
+        body {
             margin: 0;
-            padding: 0;
+            background:
+                radial-gradient(circle at top left, rgba(255,255,255,0.65), transparent 30%),
+                linear-gradient(135deg, #e8dcab 0%, #d6c36f 35%, #f2efbf 100%) !important;
+        }
+
+        .login-shell {
+            position: relative;
             min-height: 100vh;
-            background-color: transparent !important;
-        }
-        
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -10;
-            background: linear-gradient(-45deg, #e5d9c6, #b7c9b0, #f5efc2ff, #e6dca3, #b7c9b0, #166534, #a3c686);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
-        }
-        
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Estilo cristalizado aplicado sobre la tarjeta simple de Filament */
-        .fi-simple-layout {
-            background: transparent !important;
-        }
-
-        .fi-simple-main-card {
-            background: rgba(255, 255, 255, 0.4) !important;
-            backdrop-filter: blur(10px) !important;
-            border-radius: 1rem !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            padding: 2rem !important;
-            z-index: 10;
-        }
-
-        /* Inputs siempre visibles, fondo blanco y opacidad 1 */
-        .fi-input,
-        .filament-forms-text-input-component input,
-        .filament-forms-password-input-component input,
-        .fi-input:focus {
-            background: #fff !important;
-            opacity: 1 !important;
-            border: 2px solid #166534 !important;
-            color: #222 !important;
-        }
-
-        /* Labels grandes y gruesos */
-        .fi-fo-field-wrp-label {
-            font-size: 1.05rem !important;
-            font-weight: 700 !important;
-            color: #166534 !important;
-        }
-
-        /* Botón de envío */
-        button[type="submit"] {
-            margin-top: 0.5rem !important;
-            padding: 0.5rem 1rem !important;
-            border-radius: 0.5rem !important;
-            transition: all 0.3s ease !important;
-            box-shadow: 0 4px 12px rgba(22,163,74,0.2) !important;
-            background-color: #166534 !important;
-            color: #fff !important;
-            font-size: 1.125rem !important;
-            font-weight: 600 !important;
-        }
-        button[type="submit"]:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 16px rgba(22,163,74,0.3) !important;
-            background-color: #14532d !important;
-        }
-        
-        /* Efecto de burbujas */
-        .bubbles-container {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0; left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
             overflow: hidden;
-            z-index: -1;
-            pointer-events: none;
         }
-        
+
+        .glass-card-content {
+            position: relative;
+            width: min(100%, 28rem);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            background: rgba(255, 255, 255, 0.42);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+            z-index: 2;
+        }
+
+        .bubbles-container {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+
         .bubble {
             position: absolute;
-            bottom: -100px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            opacity: 0.6;
-            animation: rise 15s infinite ease-in;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.28);
+            animation: floatUp 14s infinite ease-in;
+            bottom: -120px;
         }
-        
-        .bubble:nth-child(1) { width: 40px; height: 40px; left: 10%; animation-duration: 8s; }
-        .bubble:nth-child(2) { width: 20px; height: 20px; left: 20%; animation-duration: 5s; animation-delay: 1s; }
-        .bubble:nth-child(3) { width: 50px; height: 50px; left: 35%; animation-duration: 10s; animation-delay: 2s; }
-        .bubble:nth-child(4) { width: 80px; height: 80px; left: 50%; animation-duration: 7s; }
-        .bubble:nth-child(5) { width: 35px; height: 35px; left: 55%; animation-duration: 6s; animation-delay: 1s; }
-        .bubble:nth-child(6) { width: 45px; height: 45px; left: 65%; animation-duration: 8s; animation-delay: 3s; }
-        .bubble:nth-child(7) { width: 25px; height: 25px; left: 75%; animation-duration: 7s; animation-delay: 2s; }
-        .bubble:nth-child(8) { width: 30px; height: 30px; left: 80%; animation-duration: 6s; animation-delay: 1s; }
-        .bubble:nth-child(9) { width: 15px; height: 15px; left: 70%; animation-duration: 9s; }
-        .bubble:nth-child(10) { width: 50px; height: 50px; left: 85%; animation-duration: 5s; animation-delay: 3s; }
-        
-        @keyframes rise {
-            0% { bottom: -100px; transform: translateX(0); }
-            50% { transform: translateX(100px); }
-            100% { bottom: 100%; transform: translateX(-100px); }
+
+        .bubble:nth-child(1) { width: 42px; height: 42px; left: 8%; animation-duration: 8s; }
+        .bubble:nth-child(2) { width: 20px; height: 20px; left: 16%; animation-duration: 6s; animation-delay: 1s; }
+        .bubble:nth-child(3) { width: 56px; height: 56px; left: 30%; animation-duration: 10s; animation-delay: 2s; }
+        .bubble:nth-child(4) { width: 84px; height: 84px; left: 48%; animation-duration: 7s; }
+        .bubble:nth-child(5) { width: 34px; height: 34px; left: 58%; animation-duration: 9s; animation-delay: 1s; }
+        .bubble:nth-child(6) { width: 46px; height: 46px; left: 66%; animation-duration: 8s; animation-delay: 3s; }
+        .bubble:nth-child(7) { width: 26px; height: 26px; left: 74%; animation-duration: 7s; animation-delay: 2s; }
+        .bubble:nth-child(8) { width: 30px; height: 30px; left: 82%; animation-duration: 6s; animation-delay: 1s; }
+        .bubble:nth-child(9) { width: 18px; height: 18px; left: 70%; animation-duration: 9s; }
+        .bubble:nth-child(10) { width: 50px; height: 50px; left: 88%; animation-duration: 5s; animation-delay: 3s; }
+        .bubble:nth-child(n+11) { width: 22px; height: 22px; opacity: 0.2; }
+        .bubble:nth-child(11) { left: 12%; animation-duration: 12s; animation-delay: 4s; }
+        .bubble:nth-child(12) { left: 22%; animation-duration: 11s; animation-delay: 5s; }
+        .bubble:nth-child(13) { left: 42%; animation-duration: 13s; animation-delay: 2s; }
+        .bubble:nth-child(14) { left: 54%; animation-duration: 10s; animation-delay: 6s; }
+        .bubble:nth-child(15) { left: 92%; animation-duration: 12s; animation-delay: 2s; }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-55vh) translateX(35px); }
+            100% { transform: translateY(-115vh) translateX(-25px); }
         }
     </style>
-</x-filament-panels::page.simple>
+@endsection
