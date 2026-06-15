@@ -8,13 +8,16 @@ ENV PORT=10000
 ENV NODE_OPTIONS=--max-old-space-size=2048
 
 # 2. Configuramos Apache para que su raíz apunte a la carpeta 'public' de Laravel
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
-RUN sed -i 's|/var/www/|/var/www/html/public|g' /etc/apache2/apache2.conf
-RUN a2enmod rewrite
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
+    && sed -i 's|/var/www/|/var/www/html/public|g' /etc/apache2/apache2.conf
+
+# Habilitar el módulo rewrite y permitir que .htaccess maneje las rutas (Evita el error 404 Extraviado)
+RUN a2enmod rewrite \
+    && sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
 # Cambiamos los puertos por defecto de Apache al 10000 que exige Render
-RUN sed -i 's/Listen 80/Listen 10000/g' /etc/apache2/ports.conf
-RUN sed -i 's/<VirtualHost \*:80>/<VirtualHost \*:10000>/g' /etc/apache2/sites-available/000-default.conf
+RUN sed -i 's/Listen 80/Listen 10000/g' /etc/apache2/ports.conf \
+    && sed -i 's/<VirtualHost \*:80>/<VirtualHost \*:10000>/g' /etc/apache2/sites-available/000-default.conf
 
 WORKDIR /var/www/html
 
@@ -84,5 +87,5 @@ RUN php artisan storage:link || true
 
 EXPOSE 10000
 
-# 9. Comando final: Iniciamos Apache directamente en primer plano (Sin pasar por entrypoint)
+# 9. Comando final: Iniciamos Apache directamente en primer plano
 CMD ["apache2-foreground"]
