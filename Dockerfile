@@ -7,13 +7,18 @@ ENV APP_DEBUG=false
 ENV PORT=10000
 ENV NODE_OPTIONS=--max-old-space-size=2048
 
-# 2. Configuramos Apache para que su raíz apunte a la carpeta 'public' de Laravel
+# 2. Configuramos Apache para que su raíz apunte a la carpeta 'public' de Laravel y permita reescritura
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
     && sed -i 's|/var/www/|/var/www/html/public|g' /etc/apache2/apache2.conf
 
-# Habilitar el módulo rewrite y permitir que .htaccess maneje las rutas (Evita el error 404 Extraviado)
+# Habilitar mod_rewrite y forzar AllowOverride All dentro del VirtualHost del puerto 10000 (Evita el error 404 Extraviado)
 RUN a2enmod rewrite \
-    && sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+    && sed -i '/<\/VirtualHost>/i \
+    <Directory /var/www/html/public>\n\
+        Options Indexes FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>' /etc/apache2/sites-available/000-default.conf
 
 # Cambiamos los puertos por defecto de Apache al 10000 que exige Render
 RUN sed -i 's/Listen 80/Listen 10000/g' /etc/apache2/ports.conf \
