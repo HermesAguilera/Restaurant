@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('total', 10, 2)->default(0);
             $table->text('notas')->nullable();
             $table->unsignedSmallInteger('numero_dia')->default(1);
-            $table->date('fecha_orden')->default(DB::raw('CURDATE()'));
+            $table->date('fecha_orden')->default(DB::raw('CURRENT_DATE'));
             $table->timestamp('entregado_at')->nullable();
             $table->index('fecha_orden');
             $table->timestamps();
