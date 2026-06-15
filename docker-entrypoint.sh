@@ -14,7 +14,7 @@ if [ -n "${APP_KEY:-}" ]; then
 fi
 
 run_migrations() {
-    php artisan migrate --force --no-interaction
+    php artisan migrate --seed --force --no-interaction
 }
 
 if [ "${RUN_MIGRATIONS_ON_STARTUP:-true}" = "true" ]; then

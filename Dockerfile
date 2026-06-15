@@ -60,6 +60,8 @@ RUN php artisan package:discover --ansi || true
 RUN php artisan optimize:clear || true
 RUN php artisan config:cache || true
 RUN php artisan view:cache || true
+RUN php artisan filament:upgrade || true
+RUN php artisan storage:link || true
 
 EXPOSE 10000
 
