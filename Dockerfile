@@ -7,28 +7,38 @@ ENV PORT=10000
 
 WORKDIR /var/www/html
 
-# Instalar dependencias del sistema + extensiones PHP
+# Dependencias del sistema
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     unzip \
     curl \
-    nodejs \
-    npm \
+    gnupg \
+    ca-certificates \
     libpq-dev \
     libzip-dev \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
     libicu-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node.js 22
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get update \
+    && apt-get install -y nodejs \
+    && node -v \
+    && npm -v \
+    && rm -rf /var/lib/apt/lists/*
+
+# Extensiones PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo_pgsql \
         pgsql \
         zip \
         gd \
         opcache \
-        intl \
-    && rm -rf /var/lib/apt/lists/*
+        intl
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -37,19 +47,31 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY . .
 
 # Dependencias PHP
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction \
+    --no-progress \
+    --no-scripts
 
-# Dependencias Node + build
-RUN npm ci
+# Dependencias Node y compilación Vite
+RUN npm install
+
+ENV NODE_OPTIONS=--max-old-space-size=2048
+
 RUN npm run build
 
-# Optimización Laravel
-RUN php artisan package:discover --ansi \
-    && php artisan optimize:clear \
-    && php artisan config:cache \
-    && php artisan view:cache \
-    && php artisan route:cache || true
+# Cache Laravel
+RUN php artisan package:discover --ansi || true
+
+RUN php artisan optimize:clear || true
+
+RUN php artisan config:cache || true
+
+RUN php artisan view:cache || true
+
+RUN php artisan route:cache || true
 
 EXPOSE 10000
 
-CMD sh -c "php artisan serve --host 0.0.0.0 --port ${PORT}"
+CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT}"]
