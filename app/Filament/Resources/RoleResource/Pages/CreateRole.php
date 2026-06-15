@@ -15,14 +15,6 @@ class CreateRole extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        if (! auth()->user()->hasRole('root')) {
-            $data['empresa_id'] = auth()->user()->empresa_id;
-        }
-
-        if (! isset($data['empresa_id'])) {
-            $data['empresa_id'] = auth()->user()->empresa_id;
-        }
-
         $modules = array_keys(RoleResource::getPermissionModules());
         $actions = RoleResource::getPermissionActions();
 

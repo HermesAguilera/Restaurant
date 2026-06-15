@@ -5,10 +5,10 @@
         {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
              SECCIÃ“N 1: CAJA/POS (MENÃš + CARRITO)
          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
-        <div class="flex gap-4" style="min-height:65vh">
+        <div class="flex flex-col md:flex-row gap-4" style="min-height:65vh">
 
             {{-- â”€â”€ IZQUIERDA: MENÃš â”€â”€ --}}
-            <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <div class="flex-1 flex flex-col min-w-0 overflow-hidden w-full">
 
                 {{-- SelecciÃ³n de SecciÃ³n --}}
                 <div class="flex gap-2 mb-4">
@@ -83,7 +83,7 @@
             </div>
 
             {{-- â”€â”€ DERECHA: CARRITO / ORDEN â”€â”€ --}}
-            <div class="w-80 flex flex-col bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex-shrink-0">
+            <div class="w-full md:w-80 flex flex-col bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex-shrink-0">
 
                 {{-- Header --}}
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60 space-y-3">
