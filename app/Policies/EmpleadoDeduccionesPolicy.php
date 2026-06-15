@@ -2,18 +2,20 @@
 
 namespace App\Policies;
 
-use App\Models\EmpleadoDeducciones;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Models\EmpleadoDeducciones;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class EmpleadoDeduccionesPolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('nominas_ver');
+        return $user->can('view_any_empleado::deducciones');
     }
 
     /**
@@ -21,7 +23,7 @@ class EmpleadoDeduccionesPolicy
      */
     public function view(User $user, EmpleadoDeducciones $empleadoDeducciones): bool
     {
-        return $user->can('nominas_ver');
+        return $user->can('view_empleado::deducciones');
     }
 
     /**
@@ -29,7 +31,7 @@ class EmpleadoDeduccionesPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('nominas_crear');
+        return $user->can('create_empleado::deducciones');
     }
 
     /**
@@ -37,7 +39,7 @@ class EmpleadoDeduccionesPolicy
      */
     public function update(User $user, EmpleadoDeducciones $empleadoDeducciones): bool
     {
-        return $user->can('nominas_actualizar');
+        return $user->can('update_empleado::deducciones');
     }
 
     /**
@@ -45,22 +47,62 @@ class EmpleadoDeduccionesPolicy
      */
     public function delete(User $user, EmpleadoDeducciones $empleadoDeducciones): bool
     {
-        return $user->can('nominas_eliminar');
+        return $user->can('delete_empleado::deducciones');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine whether the user can bulk delete.
      */
-    public function restore(User $user, EmpleadoDeducciones $empleadoDeducciones): bool
+    public function deleteAny(User $user): bool
     {
-        return $user->can('restore_nominas');
+        return $user->can('delete_any_empleado::deducciones');
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Determine whether the user can permanently delete.
      */
     public function forceDelete(User $user, EmpleadoDeducciones $empleadoDeducciones): bool
     {
-        return $user->can('force_delete_nominas');
+        return $user->can('force_delete_empleado::deducciones');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_empleado::deducciones');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, EmpleadoDeducciones $empleadoDeducciones): bool
+    {
+        return $user->can('restore_empleado::deducciones');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_empleado::deducciones');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, EmpleadoDeducciones $empleadoDeducciones): bool
+    {
+        return $user->can('replicate_empleado::deducciones');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_empleado::deducciones');
     }
 }

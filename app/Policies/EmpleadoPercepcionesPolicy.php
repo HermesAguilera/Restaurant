@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Deducciones;
+use App\Models\EmpleadoPercepciones;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class DeduccionesPolicy
+class EmpleadoPercepcionesPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class DeduccionesPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_deducciones');
+        return $user->can('view_any_empleado::persepciones');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Deducciones $deducciones): bool
+    public function view(User $user, EmpleadoPercepciones $empleadoPercepciones): bool
     {
-        return $user->can('view_deducciones');
+        return $user->can('view_empleado::persepciones');
     }
 
     /**
@@ -31,23 +31,23 @@ class DeduccionesPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_deducciones');
+        return $user->can('create_empleado::persepciones');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Deducciones $deducciones): bool
+    public function update(User $user, EmpleadoPercepciones $empleadoPercepciones): bool
     {
-        return $user->can('update_deducciones');
+        return $user->can('update_empleado::persepciones');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Deducciones $deducciones): bool
+    public function delete(User $user, EmpleadoPercepciones $empleadoPercepciones): bool
     {
-        return $user->can('delete_deducciones');
+        return $user->can('delete_empleado::persepciones');
     }
 
     /**
@@ -55,15 +55,15 @@ class DeduccionesPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_deducciones');
+        return $user->can('delete_any_empleado::persepciones');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Deducciones $deducciones): bool
+    public function forceDelete(User $user, EmpleadoPercepciones $empleadoPercepciones): bool
     {
-        return $user->can('force_delete_deducciones');
+        return $user->can('force_delete_empleado::persepciones');
     }
 
     /**
@@ -71,15 +71,15 @@ class DeduccionesPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_deducciones');
+        return $user->can('force_delete_any_empleado::persepciones');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Deducciones $deducciones): bool
+    public function restore(User $user, EmpleadoPercepciones $empleadoPercepciones): bool
     {
-        return $user->can('restore_deducciones');
+        return $user->can('restore_empleado::persepciones');
     }
 
     /**
@@ -87,15 +87,15 @@ class DeduccionesPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_deducciones');
+        return $user->can('restore_any_empleado::persepciones');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Deducciones $deducciones): bool
+    public function replicate(User $user, EmpleadoPercepciones $empleadoPercepciones): bool
     {
-        return $user->can('replicate_deducciones');
+        return $user->can('replicate_empleado::persepciones');
     }
 
     /**
@@ -103,6 +103,6 @@ class DeduccionesPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_deducciones');
+        return $user->can('reorder_empleado::persepciones');
     }
 }

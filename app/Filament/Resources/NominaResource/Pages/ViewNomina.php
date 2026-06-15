@@ -31,7 +31,7 @@ class ViewNomina extends ViewRecord
                 ->schema([
                     Placeholder::make('empresa')
                         ->label('Empresa')
-                        ->content(fn () => $this->record->empresa?->nombre ?? 'N/A'),
+                        ->content(fn () => 'N/A'),
                     Placeholder::make('mes')
                         ->label('Mes')
                         ->content(function () {
@@ -133,7 +133,6 @@ class ViewNomina extends ViewRecord
     private function getNominaExportData()
     {
         $nomina = $this->record->load([
-            'empresa',
             'detalleNominas.empleado',
             'detalleNominas.empleadoDeducciones.deduccion',
             'detalleNominas.empleadoPercepciones.percepcion',
@@ -164,75 +163,58 @@ class ViewNomina extends ViewRecord
             $deducciones = [];
             $deduccionesDetalle = $detalle->deducciones_detalle ?? '';
             $deduccionesLineas = array_filter(array_map('trim', explode("\n", $deduccionesDetalle)));
-            if (empty($deduccionesLineas)) {
-                $deducciones[] = [
-                    'nombre' => 'DEBUG',
-                    'valorMostrado' => 'deducciones_detalle vacío: ' . ($deduccionesDetalle === '' ? '[VACÍO]' : $deduccionesDetalle),
-                    'aplicada' => false,
-                    'valorNumerico' => 0,
-                    'valorCalculado' => 0
-                ];
-            } else {
-                foreach ($deduccionesLineas as $linea) {
-                    if (strpos($linea, ':') !== false) {
-                        [$nombre, $valorMostrado] = array_map('trim', explode(':', $linea, 2));
-                        $valorNumerico = 0;
-                        $valorCalculado = 0;
-                        if (preg_match('/([\d\.,]+)/', $valorMostrado, $matches)) {
-                            $valorNumerico = floatval(str_replace([',', 'L.', ' '], ['', '', ''], $matches[1]));
-                        }
-                        if (preg_match('/([\d\.,]+)\s*%\s*$/', $valorMostrado, $matchesPorc)) {
-                            $porcentaje = floatval(str_replace([',', ' '], ['', ''], $matchesPorc[1]));
-                            $valorCalculado = ($porcentaje / 100) * $sueldoBruto;
-                        } else {
-                            $valorCalculado = $valorNumerico;
-                        }
-                        $deducciones[] = [
-                            'nombre' => $nombre,
-                            'valorMostrado' => $valorMostrado,
-                            'aplicada' => true,
-                            'valorNumerico' => $valorNumerico,
-                            'valorCalculado' => $valorCalculado
-                        ];
+            
+            foreach ($deduccionesLineas as $linea) {
+                if (strpos($linea, ':') !== false) {
+                    [$nombre, $valorMostrado] = array_map('trim', explode(':', $linea, 2));
+                    $valorNumerico = 0;
+                    $valorCalculado = 0;
+                    if (preg_match('/([\d\.,]+)/', $valorMostrado, $matches)) {
+                        $valorNumerico = floatval(str_replace([',', 'L.', ' '], ['', '', ''], $matches[1]));
                     }
+                    if (preg_match('/([\d\.,]+)\s*%\s*$/', $valorMostrado, $matchesPorc)) {
+                        $porcentaje = floatval(str_replace([',', ' '], ['', ''], $matchesPorc[1]));
+                        $valorCalculado = ($porcentaje / 100) * $sueldoBruto;
+                    } else {
+                        $valorCalculado = $valorNumerico;
+                    }
+                    $deducciones[] = [
+                        'nombre' => $nombre,
+                        'valorMostrado' => $valorMostrado,
+                        'aplicada' => true,
+                        'valorNumerico' => $valorNumerico,
+                        'valorCalculado' => $valorCalculado
+                    ];
                 }
             }
+            
             // Percepciones
             $percepciones = [];
             $percepcionesDetalle = $detalle->percepciones_detalle ?? '';
             $percepcionesLineas = array_filter(array_map('trim', explode("\n", $percepcionesDetalle)));
-            if (empty($percepcionesLineas)) {
-                $percepciones[] = [
-                    'nombre' => 'DEBUG',
-                    'valorMostrado' => 'percepciones_detalle vacío: ' . ($percepcionesDetalle === '' ? '[VACÍO]' : $percepcionesDetalle),
-                    'aplicada' => false,
-                    'valorNumerico' => 0,
-                    'valorCalculado' => 0
-                ];
-            } else {
-                foreach ($percepcionesLineas as $linea) {
-                    if (strpos($linea, ':') !== false) {
-                        [$nombre, $valorMostrado] = array_map('trim', explode(':', $linea, 2));
-                        $valorNumerico = 0;
-                        $valorCalculado = 0;
-                        $valorLimpio = preg_replace('/\s*\(Cantidad:.*?\)/', '', $valorMostrado);
-                        if (preg_match('/([\d\.,]+)/', $valorLimpio, $matches)) {
-                            $valorNumerico = floatval(str_replace([',', 'L.', ' '], ['', '', ''], $matches[1]));
-                        }
-                        if (preg_match('/([\d\.,]+)\s*%/', $valorLimpio, $matchesPorc)) {
-                            $porcentaje = floatval(str_replace([',', ' '], ['', ''], $matchesPorc[1]));
-                            $valorCalculado = ($porcentaje / 100) * $sueldoBruto;
-                        } else {
-                            $valorCalculado = $valorNumerico;
-                        }
-                        $percepciones[] = [
-                            'nombre' => $nombre,
-                            'valorMostrado' => $valorMostrado,
-                            'aplicada' => true,
-                            'valorNumerico' => $valorNumerico,
-                            'valorCalculado' => $valorCalculado
-                        ];
+            
+            foreach ($percepcionesLineas as $linea) {
+                if (strpos($linea, ':') !== false) {
+                    [$nombre, $valorMostrado] = array_map('trim', explode(':', $linea, 2));
+                    $valorNumerico = 0;
+                    $valorCalculado = 0;
+                    $valorLimpio = preg_replace('/\s*\(Cantidad:.*?\)/', '', $valorMostrado);
+                    if (preg_match('/([\d\.,]+)/', $valorLimpio, $matches)) {
+                        $valorNumerico = floatval(str_replace([',', 'L.', ' '], ['', '', ''], $matches[1]));
                     }
+                    if (preg_match('/([\d\.,]+)\s*%/', $valorLimpio, $matchesPorc)) {
+                        $porcentaje = floatval(str_replace([',', ' '], ['', ''], $matchesPorc[1]));
+                        $valorCalculado = ($porcentaje / 100) * $sueldoBruto;
+                    } else {
+                        $valorCalculado = $valorNumerico;
+                    }
+                    $percepciones[] = [
+                        'nombre' => $nombre,
+                        'valorMostrado' => $valorMostrado,
+                        'aplicada' => true,
+                        'valorNumerico' => $valorNumerico,
+                        'valorCalculado' => $valorCalculado
+                    ];
                 }
             }
             // Nombre del empleado
@@ -247,8 +229,10 @@ class ViewNomina extends ViewRecord
                 'salario' => $sueldoBruto,
                 'deduccionesArray' => $deducciones,
                 'deducciones' => $totalDeducciones,
+                'deducciones_detalle' => $detalle->deducciones_detalle,
                 'percepcionesArray' => $percepciones,
                 'percepciones' => $detalle->percepciones, // Usar el valor guardado en la BD
+                'percepciones_detalle' => $detalle->percepciones_detalle,
                 'total' => $detalle->sueldo_neto
             ];
             $totalNomina += $detalle->sueldo_neto;
@@ -269,7 +253,6 @@ class ViewNomina extends ViewRecord
             return response('No se encontró la nómina solicitada.', 404);
         }
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.nomina', array_merge($data, [
-            'empresa' => $data['nomina']->empresa,
             'fechaGeneracion' => now()->format('d/m/Y H:i:s'),
         ]));
         $pdf->getDomPDF()->set_option('isHtml5ParserEnabled', true);

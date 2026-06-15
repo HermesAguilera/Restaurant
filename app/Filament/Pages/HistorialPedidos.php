@@ -28,51 +28,21 @@ class HistorialPedidos extends Page implements HasTable, HasForms
     protected static ?string $navigationGroup = 'Ventas';
     protected static string $view = 'filament.pages.historial-pedidos';
 
-    public string $tipo_periodo = 'diario';
-    public string $fecha_referencia;
     public array $resumen = [];
 
     public function mount(): void
     {
         abort_unless(Auth::check() && (Auth::user()->hasRole('root') || Auth::user()->can('ventas_ver')), 403);
 
-        $this->fecha_referencia = now()->toDateString();
         $this->resumen = $this->calcularResumen();
-    }
-
-    public function updatedTipoPeriodo(): void
-    {
-        $this->resumen = $this->calcularResumen();
-        $this->resetTablePage();
-    }
-
-    public function updatedFechaReferencia(): void
-    {
-        $this->resumen = $this->calcularResumen();
-        $this->resetTablePage();
     }
 
     protected function filteredQuery(): Builder
     {
-        $query = OrdenRestaurante::query();
-
-        if (filled($this->tipo_periodo) && filled($this->fecha_referencia)) {
-            try {
-                return (new OrderHistoryService())->applyPeriodFilter(
-                    $query,
-                    $this->tipo_periodo,
-                    $this->fecha_referencia
-                );
-            } catch (\Throwable $e) {
-                Notification::make()
-                    ->title('Filtro inválido')
-                    ->body('No se pudo aplicar el filtro de periodo. Verifica la fecha seleccionada.')
-                    ->danger()
-                    ->send();
-            }
-        }
-
-        return $query;
+        return (new OrderHistoryService())->applyDailyFilter(
+            OrdenRestaurante::query(),
+            now()->toDateString()
+        );
     }
 
     protected function calcularResumen(): array

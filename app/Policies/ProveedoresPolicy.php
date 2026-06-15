@@ -2,18 +2,20 @@
 
 namespace App\Policies;
 
-use App\Models\Proveedores;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Models\Proveedores;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ProveedoresPolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('comercial_ver');
+        return $user->can('view_any_proveedores');
     }
 
     /**
@@ -21,7 +23,7 @@ class ProveedoresPolicy
      */
     public function view(User $user, Proveedores $proveedores): bool
     {
-        return $user->can('comercial_ver');
+        return $user->can('view_proveedores');
     }
 
     /**
@@ -29,7 +31,7 @@ class ProveedoresPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('comercial_crear');
+        return $user->can('create_proveedores');
     }
 
     /**
@@ -37,7 +39,7 @@ class ProveedoresPolicy
      */
     public function update(User $user, Proveedores $proveedores): bool
     {
-        return $user->can('comercial_actualizar');
+        return $user->can('update_proveedores');
     }
 
     /**
@@ -45,22 +47,62 @@ class ProveedoresPolicy
      */
     public function delete(User $user, Proveedores $proveedores): bool
     {
-        return $user->can('comercial_eliminar');
+        return $user->can('delete_proveedores');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine whether the user can bulk delete.
      */
-    public function restore(User $user, Proveedores $proveedores): bool
+    public function deleteAny(User $user): bool
     {
-        return $user->can('comercial_actualizar');
+        return $user->can('delete_any_proveedores');
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Determine whether the user can permanently delete.
      */
     public function forceDelete(User $user, Proveedores $proveedores): bool
     {
-        return $user->can('comercial_eliminar');
+        return $user->can('force_delete_proveedores');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_proveedores');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Proveedores $proveedores): bool
+    {
+        return $user->can('restore_proveedores');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_proveedores');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Proveedores $proveedores): bool
+    {
+        return $user->can('replicate_proveedores');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_proveedores');
     }
 }

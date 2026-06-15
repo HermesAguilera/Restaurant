@@ -2,18 +2,20 @@
 
 namespace App\Policies;
 
-use App\Models\Productos;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Models\Productos;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ProductosPolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('inventario_ver');
+        return $user->can('view_any_productos');
     }
 
     /**
@@ -21,7 +23,7 @@ class ProductosPolicy
      */
     public function view(User $user, Productos $productos): bool
     {
-        return $user->can('inventario_ver');
+        return $user->can('view_productos');
     }
 
     /**
@@ -29,7 +31,7 @@ class ProductosPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('inventario_crear');
+        return $user->can('create_productos');
     }
 
     /**
@@ -37,7 +39,7 @@ class ProductosPolicy
      */
     public function update(User $user, Productos $productos): bool
     {
-        return $user->can('inventario_actualizar');
+        return $user->can('update_productos');
     }
 
     /**
@@ -45,8 +47,62 @@ class ProductosPolicy
      */
     public function delete(User $user, Productos $productos): bool
     {
-        return $user->can('inventario_eliminar') ;
+        return $user->can('delete_productos');
     }
 
-    
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_productos');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Productos $productos): bool
+    {
+        return $user->can('force_delete_productos');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_productos');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Productos $productos): bool
+    {
+        return $user->can('restore_productos');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_productos');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Productos $productos): bool
+    {
+        return $user->can('replicate_productos');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_productos');
+    }
 }

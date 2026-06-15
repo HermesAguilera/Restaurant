@@ -18,13 +18,11 @@ class OrderHistoryController extends Controller
     public function index(Request $request)
     {
         $request->validate([
-            'periodo' => 'required|in:diario,semanal,quincenal,mensual',
             'fecha' => 'nullable|date',
         ]);
 
-        $orders = $this->orderHistoryService->applyPeriodFilter(
+        $orders = $this->orderHistoryService->applyDailyFilter(
             \App\Models\OrdenRestaurante::query(),
-            $request->query('periodo'),
             $request->query('fecha')
         )->get();
 

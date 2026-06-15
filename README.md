@@ -59,3 +59,35 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Deploy on Render
+
+This project is prepared to run on Render with Docker and PostgreSQL.
+
+### What Render needs
+
+1. Create a PostgreSQL database in Render.
+2. Deploy the web service using the `Dockerfile` in this repo.
+3. Set `APP_URL` to your Render URL.
+4. Set `APP_KEY` to a real Laravel key.
+5. Keep `DB_CONNECTION=pgsql`.
+6. Use Render's `DATABASE_URL` as the database connection string.
+
+### Recommended Render setup
+
+- Web service: Docker
+- Database: PostgreSQL
+- Build command: handled by Docker
+- Start command: handled by Docker
+
+### Environment variables
+
+Use the values from `.env.example` as a starting point. This project now accepts Render's `DATABASE_URL` directly, so you can paste that value into the service environment and leave `DB_URL` empty.
+
+### After the first deploy
+
+Run the migrations once from the Render shell or a one-off job:
+
+```bash
+php artisan migrate --force
+```

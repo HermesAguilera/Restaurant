@@ -3,15 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RoleResource\Pages;
-use App\Filament\Resources\RoleResource\RelationManagers;
 use App\Models\Role;
-use Dom\Text;
 use Filament\Forms;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -19,11 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Spatie\Permission\Models\Role as SpatieRole;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Validation\ValidationException;
-use Filament\Forms\Components\Hidden;
 
 class RoleResource extends Resource
 {
@@ -34,26 +26,41 @@ class RoleResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-finger-print';
     protected static ?int $navigationSort = 2;
     protected static ?string $navigationGroup = 'Configuraciones';
-    
+
     // Registrar la Policy
     protected static string $policy = \App\Policies\RolePolicy::class;
 
+    public static function getPermissionModules(): array
+    {
+        return [
+            'ventas' => 'Ventas',
+            'recursos_humanos' => 'Recursos Humanos',
+            'configuraciones' => 'Configuraciones',
+            'caja_pos' => 'Caja/POS (Dashboard)',
+            'monitor_cocina' => 'Monitor de cocina',
+            'nominas' => 'Nóminas',
+        ];
+    }
+
+    public static function getPermissionActions(): array
+    {
+        return ['ver', 'crear', 'actualizar', 'eliminar'];
+    }
+
     public static function form(Form $form): Form
     {
-        $isRoot = auth()->user()->hasRole('root');
         return $form
             ->schema([
                 Section::make('Información del Rol')
                     ->schema([
-
                         TextInput::make('name')
                             ->label('Nombre del Rol')
                             ->minLength(2)
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->afterStateUpdated(function ($state, $set) {
-                                // Prevenir la creación del rol 'root' por no-roots
-                                if ($state === 'root' && !auth()->user()->hasRole('root')) {
+                                // Prevenir la creación del rol 'root' por no-root
+                                if ($state === 'root' && ! auth()->user()->hasRole('root')) {
                                     throw ValidationException::withMessages([
                                         'name' => 'No tiene permiso para crear un rol con este nombre.',
                                     ]);
@@ -69,45 +76,29 @@ class RoleResource extends Resource
                         self::getPermissionFieldsets()
                     )
                     ->collapsible()
-                    ->persistCollapsed()
+                    ->persistCollapsed(),
             ]);
     }
 
     protected static function getPermissionFieldsets(): array
     {
         $fieldsets = [];
-        
-        // Definir los módulos directamente aquí
-        $modules = [
-            'ventas' => 'Ventas',
-            'recursos_humanos' => 'Recursos Humanos',  
-            'configuraciones' => 'Configuraciones',
-            'comercial' => 'Comercial',
-            'inventario' => 'Inventario',
-            'compras' => 'Compras',
-            'ordenes_producciones' => 'Órdenes de Producción', 
-            'nominas' => 'Nóminas',   
-        ];
-
-        $actions = ['ver', 'crear', 'actualizar', 'eliminar'];
+        $modules = self::getPermissionModules();
         $actionLabels = [
             'ver' => 'Ver',
             'crear' => 'Crear',
             'actualizar' => 'Editar',
-            'eliminar' => 'Eliminar'
+            'eliminar' => 'Eliminar',
         ];
-        
-        // Crear un fieldset por cada módulo
+
         foreach ($modules as $moduleKey => $moduleLabel) {
             $fieldsets[] = Fieldset::make($moduleLabel)
                 ->schema([
                     Grid::make(4)
                         ->schema([
-                            // Columna VER
                             Forms\Components\Checkbox::make("permission_ver_{$moduleKey}")
                                 ->label($actionLabels['ver'])
                                 ->live()
-                                
                                 ->afterStateUpdated(function ($state, $set) use ($moduleKey) {
                                     self::updatePermissionRelationship($state, "{$moduleKey}_ver", $set);
                                 })
@@ -116,12 +107,10 @@ class RoleResource extends Resource
                                         $component->state($record->permissions->contains('name', "{$moduleKey}_ver"));
                                     }
                                 }),
-                            
-                            // Columna CREAR
+
                             Forms\Components\Checkbox::make("permission_crear_{$moduleKey}")
                                 ->label($actionLabels['crear'])
                                 ->live()
-                                
                                 ->afterStateUpdated(function ($state, $set) use ($moduleKey) {
                                     self::updatePermissionRelationship($state, "{$moduleKey}_crear", $set);
                                 })
@@ -130,12 +119,10 @@ class RoleResource extends Resource
                                         $component->state($record->permissions->contains('name', "{$moduleKey}_crear"));
                                     }
                                 }),
-                            
-                            // Columna ACTUALIZAR
+
                             Forms\Components\Checkbox::make("permission_actualizar_{$moduleKey}")
                                 ->label($actionLabels['actualizar'])
                                 ->live()
-                                
                                 ->afterStateUpdated(function ($state, $set) use ($moduleKey) {
                                     self::updatePermissionRelationship($state, "{$moduleKey}_actualizar", $set);
                                 })
@@ -144,8 +131,7 @@ class RoleResource extends Resource
                                         $component->state($record->permissions->contains('name', "{$moduleKey}_actualizar"));
                                     }
                                 }),
-                            
-                            // Columna ELIMINAR
+
                             Forms\Components\Checkbox::make("permission_eliminar_{$moduleKey}")
                                 ->label($actionLabels['eliminar'])
                                 ->live()
@@ -157,7 +143,7 @@ class RoleResource extends Resource
                                         $component->state($record->permissions->contains('name', "{$moduleKey}_eliminar"));
                                     }
                                 }),
-                        ])
+                        ]),
                 ])
                 ->columns(1);
         }
@@ -167,9 +153,8 @@ class RoleResource extends Resource
 
     protected static function updatePermissionRelationship($state, $permissionName, $set)
     {
-        // Esta función ahora maneja los cambios en tiempo real de los checkboxes
-        // No necesita hacer nada específico porque el procesamiento real ocurre en mutateFormDataBeforeSave
-        // Pero podrías agregar lógica aquí si necesitas validaciones o efectos en tiempo real
+        // Esta función ahora maneja los cambios en tiempo real de los checkboxes.
+        // El guardado real ocurre en mutateFormDataBeforeSave / afterCreate.
     }
 
     public static function table(Table $table): Table
@@ -182,13 +167,11 @@ class RoleResource extends Resource
                     ->label('Nombre del Rol')
                     ->searchable()
                     ->sortable(),
-                    
                 TextColumn::make('empresa.nombre')
                     ->label('Empresa')
                     ->searchable()
                     ->sortable()
                     ->visible(auth()->user()->hasRole('root')),
-                
                 TextColumn::make('permissions_count')
                     ->label('Permisos')
                     ->counts('permissions')
@@ -197,7 +180,7 @@ class RoleResource extends Resource
                 TextColumn::make('created_at')
                     ->label('Fecha de Creación')
                     ->dateTime('d-M-Y')
-                    ->sortable()
+                    ->sortable(),
             ])
             ->filters([
                 //
@@ -214,8 +197,8 @@ class RoleResource extends Resource
                     ->successNotificationTitle('Rol eliminado con éxito')
                     ->color('danger')
                     ->before(function ($record) {
-                        // Prevenir eliminación del rol root por no-roots
-                        if ($record->name === 'root' && !auth()->user()->hasRole('root')) {
+                        // Prevenir eliminación del rol root por no-root
+                        if ($record->name === 'root' && ! auth()->user()->hasRole('root')) {
                             throw new \Exception('No tiene permiso para eliminar este rol.');
                         }
                     }),
@@ -224,9 +207,10 @@ class RoleResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
                         ->before(function ($records) {
-                            // Prevenir eliminación masiva del rol root por no-roots
-                            if (!auth()->user()->hasRole('root')) {
+                            // Prevenir eliminación masiva del rol root por no-root
+                            if (! auth()->user()->hasRole('root')) {
                                 $hasRoot = $records->contains('name', 'root');
+
                                 if ($hasRoot) {
                                     throw new \Exception('No tiene permiso para eliminar el rol root.');
                                 }
@@ -238,17 +222,12 @@ class RoleResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        // Obtenemos la consulta base de todos los roles.
         $query = parent::getEloquentQuery();
 
-        // Verificamos si el usuario actual NO tiene el rol 'root'.
-        if (!auth()->user()->hasRole('root')) {
-            // Si no es root, añadimos una condición para excluir
-            // el rol cuyo nombre sea 'root'.
+        if (! auth()->user()->hasRole('root')) {
             $query->where('name', '!=', 'root');
         }
 
-        // Devolvemos la consulta (modificada o no).
         return $query->orderByDesc('id');
     }
 

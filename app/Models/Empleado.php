@@ -50,6 +50,11 @@ class Empleado extends Model
         return $this->hasMany(DetalleNominas::class, 'empleado_id');
     }
 
+    public function adelantosSalariales()
+    {
+        return $this->hasMany(AdelantoSalarial::class, 'empleado_id');
+    }
+
     // Relación con empleado_deducciones (1 empleado puede tener muchas deducciones)
     public function deduccionesAplicadas()
     {

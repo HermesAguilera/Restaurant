@@ -2,52 +2,107 @@
 
 namespace App\Policies;
 
-use App\Models\CategoriaProducto;
 use App\Models\User;
+use App\Models\CategoriaProducto;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CategoriaProductoPolicy
 {
     use HandlesAuthorization;
 
+    /**
+     * Determine whether the user can view any models.
+     */
     public function viewAny(User $user): bool
     {
-        return $user->can('inventario_ver');
+        return $user->can('view_any_categoria::producto');
     }
 
+    /**
+     * Determine whether the user can view the model.
+     */
     public function view(User $user, CategoriaProducto $categoriaProducto): bool
     {
-        return $user->can('inventario_ver');
+        return $user->can('view_categoria::producto');
     }
 
+    /**
+     * Determine whether the user can create models.
+     */
     public function create(User $user): bool
     {
-        return $user->can('inventario_crear');
+        return $user->can('create_categoria::producto');
     }
 
+    /**
+     * Determine whether the user can update the model.
+     */
     public function update(User $user, CategoriaProducto $categoriaProducto): bool
     {
-        return $user->can('inventario_actualizar');
+        return $user->can('update_categoria::producto');
     }
 
+    /**
+     * Determine whether the user can delete the model.
+     */
     public function delete(User $user, CategoriaProducto $categoriaProducto): bool
     {
-        return $user->can('inventario_eliminar');
+        return $user->can('delete_categoria::producto');
     }
 
-    public function restore(User $user, CategoriaProducto $categoriaProducto): bool
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
     {
-        if ($user->hasRole('root')) {
-            return true;
-        }
-        return $user->hasPermissionTo('restore_categoria::producto') && $categoriaProducto->empresa_id === $user->empresa_id;
+        return $user->can('delete_any_categoria::producto');
     }
 
+    /**
+     * Determine whether the user can permanently delete.
+     */
     public function forceDelete(User $user, CategoriaProducto $categoriaProducto): bool
     {
-        if ($user->hasRole('root')) {
-            return true;
-        }
-        return $user->hasPermissionTo('force_delete_categoria::producto') && $categoriaProducto->empresa_id === $user->empresa_id;
+        return $user->can('force_delete_categoria::producto');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_categoria::producto');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, CategoriaProducto $categoriaProducto): bool
+    {
+        return $user->can('restore_categoria::producto');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_categoria::producto');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, CategoriaProducto $categoriaProducto): bool
+    {
+        return $user->can('replicate_categoria::producto');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_categoria::producto');
     }
 }

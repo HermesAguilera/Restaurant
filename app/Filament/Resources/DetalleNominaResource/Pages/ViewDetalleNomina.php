@@ -47,6 +47,7 @@ class ViewDetalleNomina extends ViewRecord
                     Placeholder::make('sueldo')->label('Sueldo')->content(fn () => 'L. ' . number_format($this->record->sueldo_bruto ?? 0, 2)),
                     Placeholder::make('percepciones')->label('Percepciones')->content(fn () => 'L. ' . number_format($this->record->percepciones ?? 0, 2)),
                     Placeholder::make('deducciones')->label('Deducciones')->content(fn () => 'L. ' . number_format($this->record->deducciones ?? 0, 2)),
+                    Placeholder::make('adelanto_salarial')->label('Adelanto salarial')->content(fn () => 'L. ' . number_format($this->record->adelanto_salarial ?? 0, 2)),
                     Placeholder::make('sueldo_neto')->label('Sueldo Neto')->content(fn () => 'L. ' . number_format($this->record->sueldo_neto ?? 0, 2)),
                 ])
                 ->columns(2)

@@ -76,7 +76,15 @@ return [
             'AccountWidget', 'FilamentInfoWidget',
         ],
 
-        'resources' => [],
+        'resources' => [
+            'InventarioInsumosResource',
+            'InventarioProductosResource',
+            'MovimientoInventarioResource',
+            'OrdenComprasResource',
+            'OrdenComprasInsumosResource',
+            'TodasOrdenesComprasResource',
+            'TipoOrdenComprasResource',
+        ],
     ],
 
     'discovery' => [

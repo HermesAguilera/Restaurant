@@ -18,15 +18,23 @@ class DetalleNominas extends Model
         'nomina_id',
         'empleado_id',
         'sueldo_bruto',
-        
         'deducciones',
         'deducciones_detalle',
         'percepciones',
+        'adelanto_salarial',
         'percepciones_detalle',
         'sueldo_neto',
         'created_by',
         'updated_by',
         'deleted_by',
+    ];
+
+    protected $casts = [
+        'sueldo_bruto' => 'decimal:2',
+        'deducciones' => 'decimal:2',
+        'adelanto_salarial' => 'decimal:2',
+        'percepciones' => 'decimal:2',
+        'sueldo_neto' => 'decimal:2',
     ];
 
     // Variable para almacenar deducciones excluidas en la sesión

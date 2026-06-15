@@ -71,43 +71,53 @@ class TablaEmpleadosNomina extends Component
 
             $sueldo = $empleado->salario;
 
-            $deducciones = $empleado->deduccionesAplicadas->sum(function ($relacion) use ($sueldo) {
+            $deduccionesArray = $empleado->deduccionesAplicadas->map(function ($relacion) use ($sueldo) {
                 $deduccion = $relacion->deduccion;
-                if (!$deduccion) return 0;
-                if (trim(strtolower($deduccion->tipo_valor)) === 'porcentaje') {
-                    return ($sueldo * ($deduccion->valor / 100));
-                }
-                return $deduccion->valor;
-            });
+                if (!$deduccion) return null;
+                $esPorcentaje = trim(strtolower($deduccion->tipo_valor)) === 'porcentaje';
+                $valorCalculado = $esPorcentaje ? ($sueldo * ($deduccion->valor / 100)) : $deduccion->valor;
+                return [
+                    'nombre' => $deduccion->deduccion,
+                    'valorMostrado' => $esPorcentaje ? ($deduccion->valor . '%') : ('L. ' . number_format($deduccion->valor, 2)),
+                    'valorCalculado' => $valorCalculado
+                ];
+            })->filter()->toArray();
 
-            $percepciones = $empleado->percepcionesAplicadas->sum(function ($relacion) {
+            $percepcionesArray = $empleado->percepcionesAplicadas->map(function ($relacion) use ($sueldo) {
                 $percepcion = $relacion->percepcion;
-                if (!$percepcion) return 0;
+                if (!$percepcion) return null;
                 
+                $valorCalculado = $percepcion->valor ?? 0;
                 if (($percepcion->percepcion ?? '') === 'Horas Extras') {
                     $cantidad = $relacion->cantidad_horas ?? 0;
-                    $valorUnitario = $percepcion->valor ?? 0;
-                    return $cantidad * $valorUnitario;
+                    $valorCalculado = $cantidad * $valorCalculado;
                 }
                 
-                // Solo para Aguinaldo: usar valor específico si está definido
-                if (($percepcion->percepcion ?? '') === 'Aguinaldo' && $relacion->valor !== null) {
-                    return $relacion->valor;
-                }
-                
-                // Para otras percepciones o si no hay valor específico, usar el valor predeterminado
-                return $percepcion->valor ?? 0;
-            });
+                return [
+                    'nombre' => $percepcion->percepcion,
+                    'valorMostrado' => 'L. ' . number_format($valorCalculado, 2),
+                    'valorCalculado' => $valorCalculado
+                ];
+            })->filter()->toArray();
 
-            $total = $sueldo + $percepciones - $deducciones;
+            $totalDeducciones = collect($deduccionesArray)->sum('valorCalculado');
+            $totalPercepciones = collect($percepcionesArray)->sum('valorCalculado');
+
+            $total = $sueldo + $totalPercepciones - $totalDeducciones;
 
             DetalleNominas::create([
                 'nomina_id' => $nomina->id,
                 'empleado_id' => $empleadoId,
-                'empresa_id' => $nomina->empresa_id, // Asegurarnos de que este campo siempre tenga un valor
+                'empresa_id' => $nomina->empresa_id,
                 'sueldo_bruto' => $sueldo,
-                'deducciones' => $deducciones,
-                'percepciones' => $percepciones,
+                'deducciones' => $totalDeducciones,
+                'deducciones_detalle' => collect($deduccionesArray)
+                    ->map(fn($item) => $item['nombre'] . ': ' . $item['valorMostrado'])
+                    ->implode("\n"),
+                'percepciones' => $totalPercepciones,
+                'percepciones_detalle' => collect($percepcionesArray)
+                    ->map(fn($item) => $item['nombre'] . ': ' . $item['valorMostrado'])
+                    ->implode("\n"),
                 'sueldo_neto' => $total,
                 'created_by' => auth()->id(),
             ]);

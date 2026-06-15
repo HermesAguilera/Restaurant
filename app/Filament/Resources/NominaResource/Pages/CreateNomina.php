@@ -3,9 +3,11 @@
 namespace App\Filament\Resources\NominaResource\Pages;
 
 use App\Filament\Resources\NominaResource;
+use App\Models\AdelantoSalarial;
 use App\Models\DetalleNominas;
 use App\Models\Empleado;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\DB;
 
 class CreateNomina extends CreateRecord
 {
@@ -79,46 +81,87 @@ class CreateNomina extends CreateRecord
 
     public function create(bool $another = false): void
     {
-        $nomina = \App\Models\Nominas::create([
-            'mes' => $this->data['mes'],
-            'año' => $this->data['año'] ?? date('Y'),
-            'descripcion' => $this->data['descripcion'] ?? null,
-            'tipo_pago' => $this->data['tipo_pago'] ?? 'mensual',
-            'cerrada' => $this->data['cerrada'] ?? false,
-            'created_by' => auth()->id(),
-        ]);
-
-        foreach ($this->empleadosSeleccionados as $empleadoInput) {
-            if (empty($empleadoInput['seleccionado'])) {
-                continue;
-            }
-
-            $empleado = Empleado::find($empleadoInput['empleado_id']);
-            if (! $empleado) {
-                continue;
-            }
-
-            $salario = (float) $empleado->salario;
-            if (($this->data['tipo_pago'] ?? 'mensual') === 'quincenal') {
-                $salario /= 2;
-            } elseif (($this->data['tipo_pago'] ?? 'mensual') === 'semanal') {
-                $salario /= 4.33;
-            }
-
-            $deducciones = collect($empleadoInput['deduccionesArray'] ?? [])->sum(fn ($item) => ($item['aplicada'] ?? false) ? ($item['valorCalculado'] ?? 0) : 0);
-            $percepciones = collect($empleadoInput['percepcionesArray'] ?? [])->sum(fn ($item) => ($item['aplicada'] ?? false) ? ($item['valorCalculado'] ?? 0) : 0);
-            $total = $salario + $percepciones - $deducciones;
-
-            DetalleNominas::create([
-                'nomina_id' => $nomina->id,
-                'empleado_id' => $empleado->id,
-                'sueldo_bruto' => $salario,
-                'deducciones' => $deducciones,
-                'percepciones' => $percepciones,
-                'sueldo_neto' => $total,
+        DB::transaction(function (): void {
+            $nomina = \App\Models\Nominas::create([
+                'mes' => $this->data['mes'],
+                'aÃ±o' => $this->data['aÃ±o'] ?? date('Y'),
+                'descripcion' => $this->data['descripcion'] ?? null,
+                'tipo_pago' => $this->data['tipo_pago'] ?? 'mensual',
+                'cerrada' => $this->data['cerrada'] ?? false,
                 'created_by' => auth()->id(),
             ]);
-        }
+
+            foreach ($this->empleadosSeleccionados as $empleadoInput) {
+                if (empty($empleadoInput['seleccionado'])) {
+                    continue;
+                }
+
+                $empleado = Empleado::find($empleadoInput['empleado_id']);
+                if (! $empleado) {
+                    continue;
+                }
+
+                $salario = (float) $empleado->salario;
+                if (($this->data['tipo_pago'] ?? 'mensual') === 'quincenal') {
+                    $salario /= 2;
+                } elseif (($this->data['tipo_pago'] ?? 'mensual') === 'semanal') {
+                    $salario /= 4.33;
+                }
+
+                $deduccionesBase = collect($empleadoInput['deduccionesArray'] ?? [])
+                    ->filter(fn ($item) => $item['aplicada'] ?? false);
+                $percepcionesBase = collect($empleadoInput['percepcionesArray'] ?? [])
+                    ->filter(fn ($item) => $item['aplicada'] ?? false);
+
+                $adelantosPendientes = AdelantoSalarial::query()
+                    ->where('empleado_id', $empleado->id)
+                    ->where('estado', 'pendiente')
+                    ->whereNull('nomina_id')
+                    ->orderBy('fecha_solicitud')
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get();
+
+                $adelantoSalarial = (float) $adelantosPendientes->sum('monto');
+
+                $deducciones = $deduccionesBase->sum(fn ($item) => $item['valorCalculado'] ?? 0) + $adelantoSalarial;
+                $percepciones = $percepcionesBase->sum(fn ($item) => $item['valorCalculado'] ?? 0);
+                $total = $salario + $percepciones - $deducciones;
+
+                $deduccionesDetalle = $deduccionesBase
+                    ->map(fn ($item) => $item['nombre'] . ': ' . $item['valorMostrado'])
+                    ->values()
+                    ->implode("\n");
+
+                if ($adelantoSalarial > 0) {
+                    $deduccionesDetalle = trim($deduccionesDetalle . "\n" . 'Adelanto salarial: L. ' . number_format($adelantoSalarial, 2));
+                }
+
+                DetalleNominas::create([
+                    'nomina_id' => $nomina->id,
+                    'empleado_id' => $empleado->id,
+                    'sueldo_bruto' => $salario,
+                    'deducciones' => $deducciones,
+                    'adelanto_salarial' => $adelantoSalarial,
+                    'deducciones_detalle' => $deduccionesDetalle,
+                    'percepciones' => $percepciones,
+                    'percepciones_detalle' => $percepcionesBase
+                        ->map(fn ($item) => $item['nombre'] . ': ' . $item['valorMostrado'])
+                        ->values()
+                        ->implode("\n"),
+                    'sueldo_neto' => $total,
+                    'created_by' => auth()->id(),
+                ]);
+
+                foreach ($adelantosPendientes as $adelanto) {
+                    $adelanto->update([
+                        'nomina_id' => $nomina->id,
+                        'estado' => 'aplicado',
+                        'fecha_aplicacion' => now(),
+                    ]);
+                }
+            }
+        });
 
         $this->redirect($this->getResource()::getUrl('index'));
     }

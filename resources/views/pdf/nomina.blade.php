@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Nomina - {{ $nomina->empresa->nombre ?? 'Empresa' }}</title>
+    <title>Nomina - Restaurante Don Jorge</title>
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
@@ -96,9 +96,8 @@
     <div class="container">
         <!-- Encabezado -->
         <div class="header">
-            <h1>{{ $nomina->empresa->nombre ?? 'Empresa' }}</h1>
-            <p>{{ $nomina->empresa->direccion ?? '' }}</p>
-            <p>Teléfono: {{ $nomina->empresa->telefono ?? '' }}</p>
+            <h1>Restaurante Don Jorge</h1>
+            <p></p>
             <h2>Nómina del mes de {{ $mesNombre }} {{ $nomina->año }}</h2>
         </div>
 
@@ -157,52 +156,10 @@
                         </td>
                         <td class="text-right">L. {{ number_format($empleado['salario'], 2) }}</td>
                         <td>
-                            <ul class="deducciones-list">
-                                @php $totalDeducciones = 0; @endphp
-                                @foreach($empleado['deduccionesArray'] as $deduccion)
-                                    @if($deduccion['aplicada'])
-                                        <li>
-                                            {{ $deduccion['nombre'] }}:
-                                            <span class="text-right">
-                                                {{ $deduccion['valorMostrado'] ?? '' }}
-                                                @if(str_ends_with(trim($deduccion['valorMostrado']), '%'))
-                                                    (L. {{ number_format($deduccion['valorCalculado'], 2) }})
-                                                @endif
-                                            </span>
-                                        </li>
-                                        @php $totalDeducciones += $deduccion['valorCalculado'] ?? 0; @endphp
-                                    @endif
-                                @endforeach
-                                @if(count($empleado['deduccionesArray']) > 0)
-                                <li class="strong">Total: L. {{ number_format($totalDeducciones, 2) }}</li>
-                                @else
-                                <li>Ninguna</li>
-                                @endif
-                            </ul>
+                            @php echo nl2br(e($empleado['deducciones_detalle'] ?? 'Ninguna')); @endphp
                         </td>
                         <td>
-                            <ul class="percepciones-list">
-                                @php $totalPercepciones = 0; @endphp
-                                @foreach($empleado['percepcionesArray'] as $percepcion)
-                                    @if($percepcion['aplicada'])
-                                        <li>
-                                            {{ $percepcion['nombre'] }}:
-                                            <span class="text-right">
-                                                {{ $percepcion['valorMostrado'] ?? '' }}
-                                                @if(str_ends_with(trim($percepcion['valorMostrado']), '%'))
-                                                    (L. {{ number_format($percepcion['valorCalculado'], 2) }})
-                                                @endif
-                                            </span>
-                                        </li>
-                                        @php $totalPercepciones += $percepcion['valorCalculado'] ?? 0; @endphp
-                                    @endif
-                                @endforeach
-                                @if(count($empleado['percepcionesArray']) > 0)
-                                <li class="strong">Total: L. {{ number_format($empleado['percepciones'], 2) }}</li>
-                                @else
-                                <li>Ninguna</li>
-                                @endif
-                            </ul>
+                            @php echo nl2br(e($empleado['percepciones_detalle'] ?? 'Ninguna')); @endphp
                         </td>
                         <td class="text-right"><strong>L. {{ number_format($empleado['total'], 2) }}</strong></td>
                     </tr>
@@ -215,30 +172,11 @@
                 </tr>
             </tfoot>
         </table>
-        
-        <!-- Firmas -->
-        <div style="margin-top: 50px;">
-            <table style="width: 100%;">
-                <tr>
-                    <td style="width: 33%; text-align: center;">
-                        __________________________<br>
-                        Elaborado por
-                    </td>
-                    <td style="width: 33%; text-align: center;">
-                        __________________________<br>
-                        Revisado por
-                    </td>
-                    <td style="width: 33%; text-align: center;">
-                        __________________________<br>
-                        Autorizado por
-                    </td>
-                </tr>
-            </table>
-        </div>
+
 
         <div class="footer">
             <p>Este documento es una representación digital de la nómina de empleados</p>
-            <p>Generado el {{ $fechaGeneracion }} - {{ $nomina->empresa->nombre ?? 'Empresa' }}</p>
+            <p>Generado el {{ $fechaGeneracion }} - Restaurante Don Jorge</p>
         </div>
     </div>
 </body>

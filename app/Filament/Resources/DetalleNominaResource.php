@@ -34,6 +34,7 @@ class DetalleNominaResource extends Resource
 
             Forms\Components\TextInput::make('sueldo_bruto')->label('Sueldo bruto')->numeric()->required(),
             Forms\Components\TextInput::make('deducciones')->label('Deducciones')->numeric()->required(),
+            Forms\Components\TextInput::make('adelanto_salarial')->label('Adelanto salarial')->numeric()->required(),
             Forms\Components\TextInput::make('percepciones')->label('Percepciones')->numeric()->required(),
             Forms\Components\TextInput::make('sueldo_neto')->label('Sueldo neto')->numeric()->required(),
         ]);
@@ -47,6 +48,7 @@ class DetalleNominaResource extends Resource
                 Tables\Columns\TextColumn::make('empleado.nombre')->label('Empleado'),
                 Tables\Columns\TextColumn::make('sueldo_bruto')->label('Sueldo Bruto'),
                 Tables\Columns\TextColumn::make('deducciones')->label('Deducciones'),
+                Tables\Columns\TextColumn::make('adelanto_salarial')->label('Adelanto Salarial'),
                 Tables\Columns\TextColumn::make('percepciones')->label('Percepciones'),
                 Tables\Columns\TextColumn::make('sueldo_neto')->label('Sueldo Neto'),
             ])

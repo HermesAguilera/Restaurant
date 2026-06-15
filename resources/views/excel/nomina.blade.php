@@ -1,13 +1,10 @@
 <table>
     <thead>
         <tr>
-            <th colspan="5" style="text-align: center; font-size: 16px; font-weight: bold;">{{ $nomina->empresa->nombre ?? 'Empresa' }}</th>
+            <th colspan="5" style="text-align: center; font-size: 16px; font-weight: bold;">Restaurante Don Jorge</th>
         </tr>
         <tr>
-            <th colspan="5" style="text-align: center;">{{ $nomina->empresa->direccion ?? '' }}</th>
-        </tr>
-        <tr>
-            <th colspan="5" style="text-align: center;">Teléfono: {{ $nomina->empresa->telefono ?? '' }}</th>
+            <th colspan="5" style="text-align: center;"></th>
         </tr>
         <tr>
             <th colspan="5" style="text-align: center; font-size: 14px; font-weight: bold;">Nómina del mes de {{ $mesNombre }} {{ $nomina->año }}</th>
@@ -57,40 +54,10 @@
                 <td>{{ $empleado['nombre'] }}{{ !empty($empleado['departamento']) ? ' (Depto: '.$empleado['departamento'].')' : '' }}</td>
                 <td style="text-align: right;">L. {{ number_format($empleado['salario'], 2) }}</td>
                 <td>
-                    @php $totalDeducciones = 0; @endphp
-                    @foreach($empleado['deduccionesArray'] as $deduccion)
-                        @if($deduccion['aplicada'])
-                            {{ $deduccion['nombre'] }}: {{ $deduccion['valorMostrado'] ?? '' }}
-                            @if(str_ends_with(trim($deduccion['valorMostrado']), '%'))
-                                (L. {{ number_format($deduccion['valorCalculado'], 2) }})
-                            @endif
-                            @php $totalDeducciones += $deduccion['valorCalculado'] ?? 0; @endphp
-                            @if(!$loop->last){{ ', ' }}@endif
-                        @endif
-                    @endforeach
-                    @if(count($empleado['deduccionesArray']) > 0)
-                        Total: L. {{ number_format($totalDeducciones, 2) }}
-                    @else
-                        Ninguna
-                    @endif
+                    @php echo nl2br(e($empleado['deducciones_detalle'] ?? 'Ninguna')); @endphp
                 </td>
                 <td>
-                    @php $totalPercepciones = 0; @endphp
-                    @foreach($empleado['percepcionesArray'] as $percepcion)
-                        @if($percepcion['aplicada'])
-                            {{ $percepcion['nombre'] }}: {{ $percepcion['valorMostrado'] ?? '' }}
-                            @if(str_ends_with(trim($percepcion['valorMostrado']), '%'))
-                                (L. {{ number_format($percepcion['valorCalculado'], 2) }})
-                            @endif
-                            @php $totalPercepciones += $percepcion['valorCalculado'] ?? 0; @endphp
-                            @if(!$loop->last){{ ', ' }}@endif
-                        @endif
-                    @endforeach
-                    @if(count($empleado['percepcionesArray']) > 0)
-                        Total: L. {{ number_format($empleado['percepciones'], 2) }}
-                    @else
-                        Ninguna
-                    @endif
+                    @php echo nl2br(e($empleado['percepciones_detalle'] ?? 'Ninguna')); @endphp
                 </td>
                 <td style="text-align: right; font-weight: bold;">L. {{ number_format($empleado['total'], 2) }}</td>
             </tr>
@@ -106,7 +73,7 @@
             <td colspan="5" style="text-align: center;">Este documento es una representación digital de la nómina de empleados</td>
         </tr>
         <tr>
-            <td colspan="5" style="text-align: center;">Generado el {{ $fechaGeneracion }} - {{ $nomina->empresa->nombre ?? 'Empresa' }}</td>
+            <td colspan="5" style="text-align: center;">Generado el {{ $fechaGeneracion }} - Restaurante Don Jorge</td>
         </tr>
     </tbody>
 </table>
