@@ -11,7 +11,7 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable //implements FilamentUser
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles {
@@ -53,10 +53,10 @@ class User extends Authenticatable //implements FilamentUser
         ];
     }
 
-    /*public function canAccessPanel(Panel $panel): bool
+    public function canAccessPanel(Panel $panel): bool
     {
-        return $this->hasRole(['admin', 'super_admin', 'editor', 'viewer']);
-    }*/
+        return $this->hasRole('root') || $this->hasRole('admin');
+    }
 
     public function getFilamentAvatarUrl(): ?string
     {
