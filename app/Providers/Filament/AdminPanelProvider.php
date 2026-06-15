@@ -27,6 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->theme(asset('css/filament/admin/theme.css'))
+            ->renderHook('panels::head.end', fn () => view('filament.head-styles'))
 
             // Configuración del login nativo de Filament (Corregido)
             ->login(CustomLogin::class)
