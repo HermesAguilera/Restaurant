@@ -168,7 +168,6 @@ class Dashboard extends Page
         try {
             [$orden, $numeroDia] = DB::transaction(function () {
                 $ultimoNumeroDia = OrdenRestaurante::whereDate('fecha_orden', now()->toDateString())
-                    ->lockForUpdate()
                     ->max('numero_dia');
 
                 $numeroDia = ($ultimoNumeroDia ?? 0) + 1;
