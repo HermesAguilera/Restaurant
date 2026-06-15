@@ -26,7 +26,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->theme(asset('css/filament/admin/theme.css'))
 
             // Configuración del login nativo de Filament (Corregido)
             ->login(CustomLogin::class)
