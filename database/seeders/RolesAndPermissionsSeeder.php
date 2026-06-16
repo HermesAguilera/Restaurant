@@ -9,6 +9,7 @@ class RolesAndPermissionsSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     * Los módulos aquí deben coincidir con RoleResource::getPermissionModules()
      */
     public function run(): void
     {
@@ -16,24 +17,23 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $acciones = ['ver', 'crear', 'actualizar', 'eliminar'];
 
+        // IMPORTANTE: Estos módulos deben ser idénticos a los definidos en
+        // App\Filament\Resources\RoleResource::getPermissionModules()
         $modulos = [
             'ventas',
             'recursos_humanos',
             'configuraciones',
-            'comercial',
-            'inventario',
-            'compras',
-            'ordenes_producciones',
             'caja_pos',
             'monitor_cocina',
             'nominas',
-            'rendimientos',
-            'movimientos_inventario',
         ];
 
         foreach ($modulos as $modulo) {
             foreach ($acciones as $accion) {
-                Permission::firstOrCreate(['name' => "{$modulo}_{$accion}"]);
+                Permission::firstOrCreate([
+                    'name'       => "{$modulo}_{$accion}",
+                    'guard_name' => 'web',
+                ]);
             }
         }
     }

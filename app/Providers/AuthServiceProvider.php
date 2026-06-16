@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
-use Spatie\Permission\Models\Role as SpatieRole;
 use App\Policies\RolePolicy;
 
 class AuthServiceProvider extends ServiceProvider
@@ -16,9 +16,9 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        \App\Models\OrdenProduccion::class => \App\Policies\OrdenProduccionPolicy::class,
         \App\Models\AdelantoSalarial::class => \App\Policies\AdelantoSalarialPolicy::class,
-        SpatieRole::class => RolePolicy::class,
+        // Mapear el modelo Role local (extiende SpatieRole) para que Filament lo encuentre
+        Role::class => RolePolicy::class,
     ];
 
     /**
@@ -28,6 +28,8 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
+        // El usuario root tiene acceso total sin verificar permisos individuales.
+        // Esto reemplaza de forma limpia y segura los overrides que estaban en User.php.
         Gate::before(function (User $user, string $ability): ?bool {
             return $user->hasRole('root') ? true : null;
         });

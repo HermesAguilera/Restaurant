@@ -5,19 +5,14 @@ namespace App\Models;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles {
-        hasPermissionTo as protected spatieHasPermissionTo;
-        checkPermissionTo as protected spatieCheckPermissionTo;
-    }
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -53,9 +48,13 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    /**
+     * Cualquier usuario con al menos un rol puede acceder al panel.
+     * El bypass de permisos para 'root' se maneja en Gate::before (AuthServiceProvider).
+     */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->hasRole('root') || $this->hasRole('admin');
+        return $this->roles()->exists();
     }
 
     public function getFilamentAvatarUrl(): ?string
@@ -76,34 +75,5 @@ class User extends Authenticatable implements FilamentUser
     public function eliminadoPor()
     {
         return $this->belongsTo(User::class, 'deleted_by');
-    }
-
-    public function roles()
-    {
-        return $this->morphToMany(
-            \Spatie\Permission\Models\Role::class,
-            'model',
-            'model_has_roles',
-            'model_id',
-            'role_id'
-        );
-    }
-
-    public function hasPermissionTo($permission, $guardName = null): bool
-    {
-        if ($this->hasRole('root')) {
-            return true;
-        }
-
-        return $this->spatieHasPermissionTo($permission, $guardName);
-    }
-
-    public function checkPermissionTo($permission, $guardName = null): bool
-    {
-        if ($this->hasRole('root')) {
-            return true;
-        }
-
-        return $this->spatieCheckPermissionTo($permission, $guardName);
     }
 }
