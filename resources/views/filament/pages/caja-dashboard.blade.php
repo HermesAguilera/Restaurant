@@ -65,7 +65,7 @@
                             @foreach($this->platillos as $platillo)
                             <button
                                 wire:click="agregarItem({{ $platillo->id }})"
-                                class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 text-left hover:border-primary-400 hover:shadow-md active:scale-95 transition focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                class="group bg-white dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 p-4 text-left hover:border-primary-400 hover:shadow-md active:scale-95 transition focus:outline-none focus:ring-2 focus:ring-primary-500"
                             >
                                 @if($platillo->categoria)
                                 <span class="text-xs font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-wide">{{ $platillo->categoria }}</span>
@@ -82,11 +82,11 @@
                 </div>
             </div>
 
-            {{-- â”€â”€ DERECHA: CARRITO / ORDEN â”€â”€ --}}
-            <div class="w-full md:w-80 flex flex-col bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex-shrink-0">
+            {{-- ── DERECHA: CARRITO / ORDEN ── --}}
+            <div class="w-full md:w-80 flex flex-col bg-white dark:bg-white/5 rounded-xl ring-1 ring-gray-950/5 dark:ring-white/10 shadow-sm overflow-hidden flex-shrink-0">
 
                 {{-- Header --}}
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60 space-y-3">
+                <div class="p-4 border-b border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-transparent space-y-3">
                     <h2 class="text-lg font-bold text-gray-900 dark:text-white">Orden actual en Caja/POS</h2>
 
                     {{-- Input del Cliente --}}
@@ -96,7 +96,7 @@
                             type="text"
                             wire:model.blur="nombre_cliente"
                             placeholder="Consumidor Final"
-                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-primary-500 focus:border-primary-500 px-3 py-2"
+                            class="w-full rounded-lg border-none ring-1 ring-gray-950/10 dark:ring-white/20 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 px-3 py-2"
                         />
                     </div>
 
@@ -108,10 +108,10 @@
                             <button
                                 type="button"
                                 wire:click="$set('tipo_orden', 'restaurante')"
-                                class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg border transition shadow-sm
+                                class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition shadow-sm
                                     {{ $tipo_orden === 'restaurante'
-                                        ? 'bg-primary-600 text-white border-primary-600'
-                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                                        ? 'bg-primary-600 text-white ring-1 ring-primary-600'
+                                        : 'bg-white dark:bg-white/5 text-gray-700 dark:text-gray-300 ring-1 ring-gray-950/10 dark:ring-white/20 hover:bg-gray-50 dark:hover:bg-white/10' }}"
                             >
                                 <x-heroicon-m-building-storefront class="w-4 h-4"/>
                                 Comer Aquí
@@ -121,10 +121,10 @@
                             <button
                                 type="button"
                                 wire:click="$set('tipo_orden', 'llevar'); $set('mesa', '')"
-                                class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg border transition shadow-sm
+                                class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition shadow-sm
                                     {{ $tipo_orden === 'llevar'
-                                        ? 'bg-primary-600 text-white border-primary-600'
-                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                                        ? 'bg-primary-600 text-white ring-1 ring-primary-600'
+                                        : 'bg-white dark:bg-white/5 text-gray-700 dark:text-gray-300 ring-1 ring-gray-950/10 dark:ring-white/20 hover:bg-gray-50 dark:hover:bg-white/10' }}"
                             >
                                 <x-heroicon-m-shopping-bag class="w-4 h-4"/>
                                 Para Llevar
@@ -139,7 +139,7 @@
                             type="text"
                             wire:model.blur="mesa"
                             placeholder="Opcional"
-                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-primary-500 focus:border-primary-500 px-3 py-2"
+                            class="w-full rounded-lg border-none ring-1 ring-gray-950/10 dark:ring-white/20 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 px-3 py-2"
                         />
                     </div>
                     @endif
@@ -153,7 +153,7 @@
                             id="numero_personas"
                             wire:model.live="numero_personas"
                             min="1"
-                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500 px-3 py-2"
+                            class="w-full rounded-lg border-none ring-1 ring-gray-950/10 dark:ring-white/20 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary-500 px-3 py-2"
                         />
                     </div>
                     @endif
@@ -164,9 +164,9 @@
                     @forelse($carrito as $key => $item)
                     <div class="flex items-start gap-2">
                         <div class="flex items-center gap-1">
-                            <button wire:click="decrementar('{{ $key }}')" class="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-red-100 dark:hover:bg-red-900/50 text-gray-800 dark:text-gray-100 flex items-center justify-center font-bold text-base leading-none transition">−</button>
+                            <button wire:click="decrementar('{{ $key }}')" class="w-7 h-7 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-gray-800 dark:text-gray-200 flex items-center justify-center font-bold text-base leading-none transition">−</button>
                             <span class="w-6 text-center font-bold text-sm text-gray-900 dark:text-white">{{ $item['cantidad'] }}</span>
-                            <button wire:click="incrementar('{{ $key }}')" class="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-green-100 dark:hover:bg-green-900/50 text-gray-800 dark:text-gray-100 flex items-center justify-center font-bold text-base leading-none transition">+</button>
+                            <button wire:click="incrementar('{{ $key }}')" class="w-7 h-7 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-green-100 dark:hover:bg-green-500/20 text-gray-800 dark:text-gray-200 flex items-center justify-center font-bold text-base leading-none transition">+</button>
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="font-semibold text-sm text-gray-900 dark:text-white leading-tight truncate">{{ $item['nombre'] }}</p>
@@ -174,7 +174,7 @@
                         </div>
                         <div class="text-right flex-shrink-0">
                             <p class="font-bold text-sm text-gray-900 dark:text-white">L. {{ number_format($item['precio'] * $item['cantidad'], 2) }}</p>
-                            <button wire:click="remover('{{ $key }}')" class="text-red-400 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition mt-0.5">
+                            <button wire:click="remover('{{ $key }}')" class="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition mt-0.5">
                                 <x-heroicon-o-trash class="w-4 h-4"/>
                             </button>
                         </div>
@@ -188,19 +188,19 @@
                 </div>
 
                 {{-- Footer: notas + total + botones --}}
-                <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60 space-y-3">
+                <div class="p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-transparent space-y-3">
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Notas</label>
                         <textarea
                             wire:model.blur="notas"
                             rows="2"
                             placeholder="Sin cebolla, extra salsa..."
-                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 resize-none focus:ring-primary-500 focus:border-primary-500 px-3 py-2"
+                            class="w-full rounded-lg border-none ring-1 ring-gray-950/10 dark:ring-white/20 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 resize-none focus:ring-2 focus:ring-primary-500 px-3 py-2"
                         ></textarea>
                     </div>
 
                     <div class="flex justify-between items-center">
-                        <span class="text-base font-bold text-gray-700 dark:text-gray-200">Total</span>
+                        <span class="text-base font-bold text-gray-700 dark:text-gray-300">Total</span>
                         <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">L. {{ number_format($this->total, 2) }}</span>
                     </div>
 
@@ -208,8 +208,7 @@
                     <button
                         wire:click="enviarACocina"
                         @if(empty($carrito)) disabled @endif
-                        style="{{ empty($carrito) ? 'background-color:#9ca3af;cursor:not-allowed;' : 'background-color:#d97706;' }}"
-                        class="w-full py-3 rounded-xl font-bold text-white text-base transition active:scale-95"
+                        class="w-full py-3 rounded-xl font-bold text-white text-base transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed bg-primary-600 hover:bg-primary-500"
                     >
                         <span wire:loading.remove wire:target="enviarACocina">🍽 Enviar a Cocina</span>
                         <span wire:loading wire:target="enviarACocina" class="flex items-center justify-center gap-2">
@@ -222,7 +221,7 @@
                     <button
                         wire:click="limpiarCarrito"
                         wire:confirm="¿Limpiar toda la orden?"
-                        class="w-full py-2 rounded-xl font-semibold text-sm text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                        class="w-full py-2 rounded-xl font-semibold text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 border border-red-200 dark:border-red-500/30 hover:bg-red-50 dark:hover:bg-red-500/10 transition"
                     >
                         Cancelar orden
                     </button>

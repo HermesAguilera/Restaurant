@@ -29,7 +29,7 @@ class PlatilloResource extends Resource
                     ->required()
                     ->maxLength(150)
                     ->placeholder('Ej: Pollo a la plancha')
-                    ->columnSpan(2),
+                    ->columnSpanFull(),
 
                 Forms\Components\Select::make('tipo')
                     ->label('Tipo')
@@ -76,13 +76,13 @@ class PlatilloResource extends Resource
                 Forms\Components\Textarea::make('descripcion')
                     ->label('Descripción (opcional)')
                     ->rows(2)
-                    ->columnSpan(2),
+                    ->columnSpanFull(),
 
                 Forms\Components\Toggle::make('disponible')
                     ->label('Disponible en el menú')
                     ->default(true)
-                    ->columnSpan(2),
-            ])->columns(2),
+                    ->columnSpanFull(),
+            ])->columns(['default' => 1, 'md' => 2]),
         ]);
     }
 

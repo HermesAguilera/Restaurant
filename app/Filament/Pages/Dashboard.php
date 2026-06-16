@@ -284,7 +284,7 @@ class Dashboard extends Page
             ->form([
                 Section::make('Datos generales')
                     ->schema([
-                        Grid::make(2)->schema([
+                        Grid::make(['default' => 1, 'md' => 2])->schema([
                             TextInput::make('nombre_cliente')
                                 ->label('Cliente')
                                 ->required()
@@ -322,7 +322,7 @@ class Dashboard extends Page
                             ->reorderable(false)
                             ->defaultItems(1)
                             ->schema([
-                                Grid::make(12)->schema([
+                                Grid::make(['default' => 1, 'md' => 12])->schema([
                                     Select::make('platillo_id')
                                         ->label('Platillo')
                                         ->options(fn () => Platillo::query()
@@ -332,7 +332,7 @@ class Dashboard extends Page
                                             ->all())
                                         ->searchable()
                                         ->required()
-                                        ->columnSpan(7)
+                                        ->columnSpan(['default' => 1, 'md' => 7])
                                         ->live()
                                         ->afterStateUpdated(function ($state, callable $set): void {
                                             $set('precio_unitario', (float) (Platillo::find($state)?->precio ?? 0));
@@ -342,13 +342,13 @@ class Dashboard extends Page
                                         ->numeric()
                                         ->minValue(1)
                                         ->required()
-                                        ->columnSpan(2),
+                                        ->columnSpan(['default' => 1, 'md' => 2]),
                                     TextInput::make('precio_unitario')
                                         ->label('Precio')
                                         ->numeric()
                                         ->prefix('L.')
                                         ->required()
-                                        ->columnSpan(3),
+                                        ->columnSpan(['default' => 1, 'md' => 3]),
                                 ]),
                             ]),
                     ])

@@ -54,6 +54,12 @@ class User extends Authenticatable implements FilamentUser
      */
     public function canAccessPanel(Panel $panel): bool
     {
+        // Siempre permitir el acceso al usuario principal o a quienes tengan el rol 'root'
+        if ($this->email === 'admin@admin.com' || $this->email === 'root@example.com' || $this->hasRole('root')) {
+            return true;
+        }
+
+        // Si no es root, debe tener al menos un rol asignado para poder entrar al panel
         return $this->roles()->exists();
     }
 
