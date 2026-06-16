@@ -37,6 +37,9 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->plugins([
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+            ])
             /* ->renderHook(
                 'panels::topbar.end',
                 fn () => view('components.theme-toggle')

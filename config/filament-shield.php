@@ -54,7 +54,7 @@ return [
 
     'entities' => [
         'pages' => true,
-        'widgets' => true,
+        'widgets' => false,
         'resources' => true,
         'custom_permissions' => false,
     ],
@@ -70,6 +70,9 @@ return [
 
         'pages' => [
             'Dashboard',
+            'AperturaCaja',
+            'RecibirOrdenCompra',
+            'RecibirOrdenCompraInsumos',
         ],
 
         'widgets' => [
@@ -84,6 +87,13 @@ return [
             'OrdenComprasInsumosResource',
             'TodasOrdenesComprasResource',
             'TipoOrdenComprasResource',
+            'CaiResource',
+            'CajaResource',
+            'CajaAperturaResource',
+            'CategoriaProductoResource',
+            'FacturaResource',
+            'ProductosResource',
+            'ProveedoresResource',
         ],
     ],
 

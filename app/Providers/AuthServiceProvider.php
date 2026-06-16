@@ -31,7 +31,9 @@ class AuthServiceProvider extends ServiceProvider
         // El usuario root tiene acceso total sin verificar permisos individuales.
         // Esto reemplaza de forma limpia y segura los overrides que estaban en User.php.
         Gate::before(function (User $user, string $ability): ?bool {
-            return $user->hasRole('root') ? true : null;
+            // Temporalmente sin restricciones para ningún usuario, según lo solicitado.
+            // (Todos actúan como super administradores).
+            return true;
         });
     }
 }
