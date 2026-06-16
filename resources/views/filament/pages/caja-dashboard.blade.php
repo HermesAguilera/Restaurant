@@ -91,12 +91,12 @@
 
                     {{-- Input del Cliente --}}
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Cliente</label>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Cliente</label>
                         <input
                             type="text"
                             wire:model.blur="nombre_cliente"
                             placeholder="Consumidor Final"
-                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
+                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-primary-500 focus:border-primary-500 px-3 py-2"
                         />
                     </div>
 
@@ -134,12 +134,12 @@
 
                     @if($tipo_orden === 'restaurante')
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Mesa</label>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Mesa</label>
                         <input
                             type="text"
                             wire:model.blur="mesa"
                             placeholder="Opcional"
-                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
+                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-primary-500 focus:border-primary-500 px-3 py-2"
                         />
                     </div>
                     @endif
@@ -147,13 +147,13 @@
                     {{-- Input de Comensales (Solo se muestra si es Restaurante) --}}
                     @if($tipo_orden === 'restaurante')
                     <div class="pt-1">
-                        <label for="numero_personas" class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Número de Personas</label>
+                        <label for="numero_personas" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Número de Personas</label>
                         <input
                             type="number"
                             id="numero_personas"
                             wire:model.live="numero_personas"
                             min="1"
-                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500"
+                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-primary-500 focus:border-primary-500 px-3 py-2"
                         />
                     </div>
                     @endif
@@ -190,12 +190,12 @@
                 {{-- Footer: notas + total + botones --}}
                 <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60 space-y-3">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Notas</label>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Notas</label>
                         <textarea
                             wire:model.blur="notas"
                             rows="2"
                             placeholder="Sin cebolla, extra salsa..."
-                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm resize-none focus:ring-primary-500 focus:border-primary-500"
+                            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 resize-none focus:ring-primary-500 focus:border-primary-500 px-3 py-2"
                         ></textarea>
                     </div>
 
@@ -269,27 +269,27 @@
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                             @foreach($this->ordenesPendientes as $orden)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition">
-                                <td class="px-4 py-3">
+                                <td class="px-3 py-3">
                                     <span class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm
                                         {{ $orden->entregado_at ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }}">
                                         {{ $orden->numero_dia }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $orden->nombre_cliente }}</td>
-                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+                                <td class="px-3 py-3 font-medium text-gray-900 dark:text-white text-sm">{{ $orden->nombre_cliente }}</td>
+                                <td class="px-3 py-3 text-gray-600 dark:text-gray-300 text-sm">
                                     {{ $orden->mesa ?: 'Sin mesa' }}
                                 </td>
-                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+                                <td class="px-3 py-3 text-gray-600 dark:text-gray-300 text-sm max-w-xs">
                                     @foreach($orden->detalles as $d)
-                                        <span class="inline-block">{{ $d->cantidad }}× {{ $d->platillo?->nombre ?? '?' }}</span>@if(!$loop->last), @endif
+                                        <span class="inline-block text-xs">{{ $d->cantidad }}× {{ $d->platillo?->nombre ?? '?' }}</span>@if(!$loop->last), @endif
                                     @endforeach
                                     @if($orden->notas)
                                     <br><span class="text-xs text-red-500 italic">{{ $orden->notas }}</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 font-bold text-gray-900 dark:text-white">L. {{ number_format($orden->total, 2) }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-wrap items-center gap-3">
+                                <td class="px-3 py-3 font-bold text-gray-900 dark:text-white text-sm whitespace-nowrap">L. {{ number_format($orden->total, 2) }}</td>
+                                <td class="px-3 py-3">
+                                    <div class="flex flex-wrap items-center gap-1.5">
                                     <button
                                         wire:click="mountAction('viewOrder', { orderId: {{ $orden->id }} })"
                                         class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"

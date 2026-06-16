@@ -6,16 +6,17 @@
     --info: 96, 165, 250; /* Azul claro para productos */
 }
 
+/* Fondo del panel — modo claro */
 .filament-panels-page {
     background: linear-gradient(to right, #f9fafb, #ffffff);
 }
 
-@media (prefers-color-scheme: dark) {
-    .filament-panels-page {
-        background: linear-gradient(to right, #111827, #1f2937);
-    }
+/* Fondo del panel — modo oscuro (usando class-based .dark de Filament) */
+.dark .filament-panels-page {
+    background: linear-gradient(to right, #111827, #1f2937);
 }
 
+/* Card — modo claro */
 .filament-card {
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
@@ -26,9 +27,9 @@
 .filament-card:hover {
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
-@media (prefers-color-scheme: dark) {
-    .filament-card {
-        background-color: #1f2937;
-        border: 1px solid #374151;
-    }
+
+/* Card — modo oscuro (usando class-based .dark de Filament) */
+.dark .filament-card {
+    background-color: #1f2937;
+    border: 1px solid #374151;
 }

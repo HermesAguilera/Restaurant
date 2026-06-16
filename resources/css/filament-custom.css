@@ -1,4 +1,184 @@
 /* resources/css/filament-custom.css */
+/* =====================================================
+   DARK MODE — usa class-based (.dark) de Filament
+   ===================================================== */
+
+/* Fix tabla Filament: modo claro claro, modo oscuro oscuro */
 .fi-ta-table {
-    background-color: #f5f5f5 !important; /* Gris clarito */
+    background-color: #f9fafb !important;
+}
+.dark .fi-ta-table {
+    background-color: #1f2937 !important;
+}
+
+/* =====================================================
+   CAJA/POS — Inputs del carrito en modo oscuro
+   ===================================================== */
+
+/* Inputs nativos (sin clases fi-*) dentro del panel oscuro */
+.dark input[type="text"],
+.dark input[type="number"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="search"],
+.dark input[type="tel"],
+.dark input[type="url"],
+.dark select,
+.dark textarea {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #f9fafb !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: #6b7280 !important;
+}
+
+/* Asegura contraste en labels */
+.dark label {
+    color: #d1d5db;
+}
+
+/* Filament card — soporte modo oscuro con class selector */
+.dark .filament-card {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+/* =====================================================
+   TABLES — Dark mode para tablas personalizadas
+   ===================================================== */
+.dark table thead tr {
+    background-color: #1f2937 !important;
+}
+.dark table thead th {
+    color: #d1d5db !important;
+    border-color: #374151 !important;
+}
+.dark table tbody tr {
+    background-color: #111827 !important;
+}
+.dark table tbody tr:hover {
+    background-color: #1f2937 !important;
+}
+.dark table tbody td {
+    color: #e5e7eb !important;
+    border-color: #374151 !important;
+}
+.dark table tbody tr td {
+    border-color: #374151 !important;
+}
+
+/* Botones de estado en modo oscuro */
+.dark .bg-red-100 {
+    background-color: rgba(127, 29, 29, 0.3) !important;
+}
+.dark .text-red-600 {
+    color: #fca5a5 !important;
+}
+
+/* =====================================================
+   MOBILE RESPONSIVE — ajustes globales
+   ===================================================== */
+
+/* Tablas: scroll horizontal en móvil */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Caja/POS: stack vertical en móvil, lado a lado en desktop */
+@media (max-width: 767px) {
+    /* Sección principal POS: columna completa */
+    .fi-page-caja-dashboard .flex.flex-col.md\:flex-row {
+        flex-direction: column !important;
+    }
+
+    /* Carrito de la orden: ancho completo en móvil */
+    .fi-page-caja-dashboard .w-full.md\:w-80 {
+        width: 100% !important;
+    }
+
+    /* Grid de platillos: 2 columnas en móvil */
+    .grid.grid-cols-2.sm\:grid-cols-3.xl\:grid-cols-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    /* Botones de acción en tabla de órdenes: wrap en móvil */
+    .fi-page-caja-dashboard table .flex.flex-wrap {
+        flex-wrap: wrap !important;
+        gap: 0.25rem !important;
+    }
+
+    /* Inputs de formularios: ancho completo */
+    .fi-page-caja-dashboard input,
+    .fi-page-caja-dashboard select,
+    .fi-page-caja-dashboard textarea {
+        width: 100% !important;
+        font-size: 16px !important; /* evita zoom en iOS */
+    }
+
+    /* Tablas de órdenes: scroll horizontal */
+    .fi-page-caja-dashboard .overflow-x-auto {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* =====================================================
+   FORMULARIOS FILAMENT — Mobile optimizado
+   ===================================================== */
+@media (max-width: 640px) {
+    /* Grids de 3 columnas -> 1 columna en móvil */
+    .grid.grid-cols-3 {
+        grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    }
+
+    /* Asegura que los campos no se superpongan */
+    .fi-fo-field-wrp {
+        width: 100% !important;
+    }
+
+    /* Modal / slide-over: ancho completo */
+    .fi-modal-window {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    /* Slide-over panel */
+    .fi-slideover {
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+
+    /* Botones de acción: stack en móvil */
+    .fi-ac-action-group {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+    .fi-ac-action-group .fi-btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    /* Tabla de ordencompra: scroll horizontal */
+    .fi-page .overflow-x-auto,
+    .fi-page table {
+        overflow-x: auto !important;
+        display: block !important;
+    }
+
+    /* Inputs nativos: font-size 16px para evitar zoom en iOS */
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+
+    /* Filtros/subfiltros en POS: scroll horizontal */
+    .flex.flex-wrap.items-center.gap-2 {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+    }
 }
