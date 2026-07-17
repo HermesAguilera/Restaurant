@@ -48,7 +48,7 @@ EXIT;
 ```bash
 sudo mkdir -p /var/www/restaurante
 sudo chown -R $USER:www-data /var/www/restaurante
-git clone <URL_DEL_REPO> /var/www/restaurante
+git clone https://github.com/HermesAguilera/Restaurant.git /var/www/restaurante
 cd /var/www/restaurante
 
 cp .env.example .env
@@ -174,19 +174,26 @@ a root.
 
 ## 12. Que el droplet pueda hacer `git pull`
 
-Como usuario `deploy`, genera una clave y regístrala como **deploy key de solo
-lectura** en el repositorio (Settings → Deploy keys → Add deploy key):
+`HermesAguilera/Restaurant` es público, así que `git pull` por HTTPS funciona sin
+ninguna clave ni token — es lo que ya quedó configurado en el paso 3. No hace falta
+nada más aquí.
+
+Verifícalo como usuario `deploy`, que es quien correrá `deploy.sh`:
+
+```bash
+sudo -u deploy git -C /var/www/restaurante pull --ff-only
+```
+
+Si el repositorio pasa a privado en algún momento, ese comando empezará a pedir
+credenciales y `deploy.sh` fallará en el `git pull`. En ese caso hace falta una
+**deploy key de solo lectura** (Settings → Deploy keys → Add deploy key del repo) y
+cambiar el remoto a SSH:
 
 ```bash
 sudo -u deploy ssh-keygen -t ed25519 -C "droplet-restaurante" -f /home/deploy/.ssh/id_ed25519 -N ""
-sudo cat /home/deploy/.ssh/id_ed25519.pub
+sudo cat /home/deploy/.ssh/id_ed25519.pub   # pegar como deploy key en GitHub
 sudo -u deploy ssh -o StrictHostKeyChecking=accept-new -T git@github.com || true
-```
-
-El remoto tiene que ser SSH, no HTTPS:
-
-```bash
-sudo -u deploy git -C /var/www/restaurante remote set-url origin git@github.com:USUARIO/Restaurant.git
+sudo -u deploy git -C /var/www/restaurante remote set-url origin git@github.com:HermesAguilera/Restaurant.git
 ```
 
 ## 13. GitHub Actions
@@ -194,8 +201,9 @@ sudo -u deploy git -C /var/www/restaurante remote set-url origin git@github.com:
 El workflow está en `.github/workflows/deploy.yml`: ante un push a `main` corre los
 tests y, solo si pasan, entra por SSH y ejecuta `deploy/deploy.sh`.
 
-Genera un par de claves **en tu máquina** para que Actions entre al droplet (esta es
-distinta de la deploy key del paso 12):
+Genera un par de claves **en tu máquina** para que Actions entre al droplet (esto
+es solo para SSH hacia el servidor; no tiene relación con el acceso a GitHub del
+paso 12):
 
 ```bash
 ssh-keygen -t ed25519 -C "github-actions" -f ./gh_deploy_key -N ""
@@ -203,7 +211,8 @@ ssh-copy-id -i ./gh_deploy_key.pub deploy@IP_DEL_DROPLET
 ssh-keyscan -H IP_DEL_DROPLET   # la salida va al secreto DEPLOY_KNOWN_HOSTS
 ```
 
-En el repo, Settings → Secrets and variables → Actions, crea:
+En `github.com/HermesAguilera/Restaurant` → Settings → Secrets and variables →
+Actions, crea:
 
 | Secreto | Valor |
 | --- | --- |

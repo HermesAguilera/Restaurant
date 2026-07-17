@@ -18,7 +18,10 @@ return new class extends Migration
             $table->foreignId('empleado_id')->constrained('empleados');
             $table->foreignId('deduccion_id')->constrained('deducciones');
 
-            $table->date('fecha_aplicacion')->default(DB::raw('CURRENT_DATE'));
+            // MySQL 8.0.13+ exige paréntesis en defaults por expresión para columnas
+            // que no son TIMESTAMP/DATETIME; sin ellos el CREATE TABLE falla con
+            // error de sintaxis. MariaDB acepta ambas formas.
+            $table->date('fecha_aplicacion')->default(DB::raw('(CURRENT_DATE)'));
 
             $table->timestamps();      
             $table->softDeletes();  

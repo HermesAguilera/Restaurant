@@ -20,7 +20,10 @@ return new class extends Migration
             $table->decimal('total', 10, 2)->default(0);
             $table->text('notas')->nullable();
             $table->unsignedSmallInteger('numero_dia')->default(1);
-            $table->date('fecha_orden')->default(DB::raw('CURRENT_DATE'));
+            // MySQL 8.0.13+ exige paréntesis en defaults por expresión para columnas
+            // que no son TIMESTAMP/DATETIME; sin ellos el CREATE TABLE falla con
+            // error de sintaxis. MariaDB acepta ambas formas.
+            $table->date('fecha_orden')->default(DB::raw('(CURRENT_DATE)'));
             $table->timestamp('entregado_at')->nullable();
             $table->index('fecha_orden');
             $table->timestamps();
