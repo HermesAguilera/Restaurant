@@ -50,7 +50,7 @@ class User extends Authenticatable implements FilamentUser
 
     /**
      * Cualquier usuario con al menos un rol puede acceder al panel.
-     * El bypass de permisos para 'root' se maneja en Gate::before (AuthServiceProvider).
+     * El bypass de permisos para 'root' se maneja en Gate::before (AppServiceProvider).
      */
     public function canAccessPanel(Panel $panel): bool
     {
@@ -66,20 +66,5 @@ class User extends Authenticatable implements FilamentUser
     public function getFilamentAvatarUrl(): ?string
     {
         return null;
-    }
-
-    public function creadoPor()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function actualizadoPor()
-    {
-        return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    public function eliminadoPor()
-    {
-        return $this->belongsTo(User::class, 'deleted_by');
     }
 }

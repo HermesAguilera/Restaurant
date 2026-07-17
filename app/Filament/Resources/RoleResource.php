@@ -15,7 +15,6 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Validation\ValidationException;
 
 class RoleResource extends Resource
 {
@@ -58,14 +57,16 @@ class RoleResource extends Resource
                             ->minLength(2)
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
-                            ->afterStateUpdated(function ($state, $set) {
-                                // Prevenir la creación del rol 'root' por no-root
-                                if ($state === 'root' && ! auth()->user()->hasRole('root')) {
-                                    throw ValidationException::withMessages([
-                                        'name' => 'No tiene permiso para crear un rol con este nombre.',
-                                    ]);
+                            // El nombre "root" nunca se puede reasignar ni renombrar: el resto del
+                            // sistema (User::canAccessPanel, Gate::before, etc.) depende de que ese
+                            // string exista literalmente para conceder acceso total.
+                            ->rule(fn (?Role $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
+                                if (strtolower($value) === 'root' && $record?->name !== 'root') {
+                                    $fail('El nombre "root" está reservado y no se puede usar.');
                                 }
                             })
+                            ->disabled(fn (?Role $record): bool => $record?->name === 'root')
+                            ->dehydrated(fn (?Role $record): bool => $record?->name !== 'root')
                             ->required(),
                     ])
                     ->columns(1),
@@ -95,66 +96,22 @@ class RoleResource extends Resource
             $fieldsets[] = Fieldset::make($moduleLabel)
                 ->schema([
                     Grid::make(4)
-                        ->schema([
-                            Forms\Components\Checkbox::make("permission_ver_{$moduleKey}")
-                                ->label($actionLabels['ver'])
-                                ->live()
-                                ->afterStateUpdated(function ($state, $set) use ($moduleKey) {
-                                    self::updatePermissionRelationship($state, "{$moduleKey}_ver", $set);
-                                })
-                                ->afterStateHydrated(function ($component, $state, $record) use ($moduleKey) {
-                                    if ($record) {
-                                        $component->state($record->permissions->contains('name', "{$moduleKey}_ver"));
-                                    }
-                                }),
-
-                            Forms\Components\Checkbox::make("permission_crear_{$moduleKey}")
-                                ->label($actionLabels['crear'])
-                                ->live()
-                                ->afterStateUpdated(function ($state, $set) use ($moduleKey) {
-                                    self::updatePermissionRelationship($state, "{$moduleKey}_crear", $set);
-                                })
-                                ->afterStateHydrated(function ($component, $state, $record) use ($moduleKey) {
-                                    if ($record) {
-                                        $component->state($record->permissions->contains('name', "{$moduleKey}_crear"));
-                                    }
-                                }),
-
-                            Forms\Components\Checkbox::make("permission_actualizar_{$moduleKey}")
-                                ->label($actionLabels['actualizar'])
-                                ->live()
-                                ->afterStateUpdated(function ($state, $set) use ($moduleKey) {
-                                    self::updatePermissionRelationship($state, "{$moduleKey}_actualizar", $set);
-                                })
-                                ->afterStateHydrated(function ($component, $state, $record) use ($moduleKey) {
-                                    if ($record) {
-                                        $component->state($record->permissions->contains('name', "{$moduleKey}_actualizar"));
-                                    }
-                                }),
-
-                            Forms\Components\Checkbox::make("permission_eliminar_{$moduleKey}")
-                                ->label($actionLabels['eliminar'])
-                                ->live()
-                                ->afterStateUpdated(function ($state, $set) use ($moduleKey) {
-                                    self::updatePermissionRelationship($state, "{$moduleKey}_eliminar", $set);
-                                })
-                                ->afterStateHydrated(function ($component, $state, $record) use ($moduleKey) {
-                                    if ($record) {
-                                        $component->state($record->permissions->contains('name', "{$moduleKey}_eliminar"));
-                                    }
-                                }),
-                        ]),
+                        ->schema(
+                            collect($actionLabels)->map(
+                                fn (string $label, string $action) => Forms\Components\Checkbox::make("permission_{$action}_{$moduleKey}")
+                                    ->label($label)
+                                    ->afterStateHydrated(function ($component, $record) use ($moduleKey, $action) {
+                                        if ($record) {
+                                            $component->state($record->permissions->contains('name', "{$moduleKey}_{$action}"));
+                                        }
+                                    })
+                            )->values()->all()
+                        ),
                 ])
                 ->columns(1);
         }
 
         return $fieldsets;
-    }
-
-    protected static function updatePermissionRelationship($state, $permissionName, $set)
-    {
-        // Esta función ahora maneja los cambios en tiempo real de los checkboxes.
-        // El guardado real ocurre en mutateFormDataBeforeSave / afterCreate.
     }
 
     public static function table(Table $table): Table
@@ -167,11 +124,6 @@ class RoleResource extends Resource
                     ->label('Nombre del Rol')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('empresa.nombre')
-                    ->label('Empresa')
-                    ->searchable()
-                    ->sortable()
-                    ->visible(auth()->user()->hasRole('root')),
                 TextColumn::make('permissions_count')
                     ->label('Permisos')
                     ->counts('permissions')
@@ -196,24 +148,14 @@ class RoleResource extends Resource
                     ->requiresConfirmation()
                     ->successNotificationTitle('Rol eliminado con éxito')
                     ->color('danger')
-                    ->before(function ($record) {
-                        // Prevenir eliminación del rol root por no-root
-                        if ($record->name === 'root' && ! auth()->user()->hasRole('root')) {
-                            throw new \Exception('No tiene permiso para eliminar este rol.');
-                        }
-                    }),
+                    ->visible(fn ($record): bool => $record->name !== 'root'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
                         ->before(function ($records) {
-                            // Prevenir eliminación masiva del rol root por no-root
-                            if (! auth()->user()->hasRole('root')) {
-                                $hasRoot = $records->contains('name', 'root');
-
-                                if ($hasRoot) {
-                                    throw new \Exception('No tiene permiso para eliminar el rol root.');
-                                }
+                            if ($records->contains('name', 'root')) {
+                                throw new \Exception('No se puede eliminar el rol root.');
                             }
                         }),
                 ]),
@@ -224,7 +166,7 @@ class RoleResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        if (! auth()->user()->hasRole('root')) {
+        if (! auth()->user()?->hasRole('root')) {
             $query->where('name', '!=', 'root');
         }
 

@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Forzar HTTPS en producción (Esencial para proxies inversos como Render)
-        if (config('app.env') === 'production' || config('app.url') !== 'http://localhost') {
+        if (config('app.env') === 'production') {
             URL::forceScheme('https');
         }
 

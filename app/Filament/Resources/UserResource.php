@@ -10,8 +10,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
 
 class UserResource extends Resource
 {
@@ -43,7 +41,13 @@ class UserResource extends Resource
                     Forms\Components\Select::make('roles')
                         ->label('Roles')
                         ->multiple()
-                        ->relationship('roles', 'name', fn (Builder $query) => $query->where('name', '!=', 'root'))
+                        ->relationship(
+                            'roles',
+                            'name',
+                            fn (Builder $query) => auth()->user()?->hasRole('root')
+                                ? $query
+                                : $query->where('name', '!=', 'root')
+                        )
                         ->preload()
                         ->searchable(),
                 ]),
