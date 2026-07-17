@@ -17,6 +17,7 @@ use Filament\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Attributes\Computed;
 
 class Dashboard extends Page
 {
@@ -38,7 +39,8 @@ class Dashboard extends Page
     public string $mesa = '';
     public mixed $ordenDetalle = null;
 
-    public function getPlatillosProperty()
+    #[Computed]
+    public function platillos()
     {
         $query = Platillo::where('disponible', true)
             ->where('tipo', $this->filtro_seccion);
@@ -58,38 +60,57 @@ class Dashboard extends Page
         return $query->orderBy('categoria')->orderBy('nombre')->get();
     }
 
-    public function getCategoriasProperty(): array
+    #[Computed]
+    public function subfiltrosCocina(): array
     {
-        return Platillo::where('disponible', true)
-            ->where('tipo', $this->filtro_seccion)
+        // Derivamos las secciones reales desde la BD para que no queden hardcodeadas.
+        $secciones = Platillo::query()
+            ->where('tipo', 'comida')
+            ->whereNotNull('seccion')
             ->distinct()
-            ->pluck('categoria')
-            ->filter()
-            ->sort()
-            ->values()
-            ->toArray();
+            ->orderBy('seccion')
+            ->pluck('seccion')
+            ->all();
+
+        $opciones = ['todos' => 'Todos'];
+
+        foreach ($secciones as $seccion) {
+            $opciones[$seccion] = ucfirst($seccion);
+        }
+
+        return $opciones;
     }
 
-    public function getOrdenesPendientesProperty()
+    #[Computed]
+    public function totalItems(): int
     {
-        $query = OrdenRestaurante::with('detalles.platillo')
-            ->whereDate('fecha_orden', now()->toDateString())
-            ->orderBy('numero_dia', 'asc');
-
-        $query->whereNull('entregado_at');
-
-        return $query->get();
+        return (int) collect($this->carrito)->sum('cantidad');
     }
 
-    public function getOrdenesEntregadasProperty()
+    #[Computed]
+    public function ordenesPendientes()
     {
-        $query = OrdenRestaurante::with('detalles.platillo')
+        return OrdenRestaurante::with('detalles.platillo')
             ->whereDate('fecha_orden', now()->toDateString())
-            ->orderBy('updated_at', 'desc');
+            ->whereNull('entregado_at')
+            ->orderBy('numero_dia', 'asc')
+            ->get();
+    }
 
-        $query->whereNotNull('entregado_at');
+    #[Computed]
+    public function ordenesEntregadas()
+    {
+        return OrdenRestaurante::with('detalles.platillo')
+            ->whereDate('fecha_orden', now()->toDateString())
+            ->whereNotNull('entregado_at')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+    }
 
-        return $query->get();
+    #[Computed]
+    public function total(): float
+    {
+        return collect($this->carrito)->sum(fn ($item) => $item['precio'] * $item['cantidad']);
     }
 
     public function agregarItem(int $platilloId): void
@@ -112,6 +133,18 @@ class Dashboard extends Page
             'precio' => (float) $platillo->precio,
             'cantidad' => 1,
         ];
+    }
+
+    public function agregarPrimerResultado(): void
+    {
+        // Enter en el buscador: agrega el primer platillo de la lista filtrada y limpia la búsqueda
+        // para que el cajero pueda encadenar altas sin soltar el teclado.
+        $primero = $this->platillos->first();
+
+        if ($primero) {
+            $this->agregarItem($primero->id);
+            $this->busqueda = '';
+        }
     }
 
     public function incrementar(string $key): void
@@ -149,10 +182,6 @@ class Dashboard extends Page
         $this->mesa = '';
     }
 
-    public function getTotalProperty(): float
-    {
-        return collect($this->carrito)->sum(fn ($item) => $item['precio'] * $item['cantidad']);
-    }
 
     public function enviarACocina(): void
     {
@@ -166,35 +195,54 @@ class Dashboard extends Page
         }
 
         try {
-            [$orden, $numeroDia] = DB::transaction(function () {
-                $ultimoNumeroDia = OrdenRestaurante::whereDate('fecha_orden', now()->toDateString())
-                    ->max('numero_dia');
+            $fechaOrden = now()->toDateString();
+            $intentosRestantes = 5;
 
-                $numeroDia = ($ultimoNumeroDia ?? 0) + 1;
+            do {
+                try {
+                    [$orden, $numeroDia] = DB::transaction(function () use ($fechaOrden) {
+                        $ultimoNumeroDia = OrdenRestaurante::whereDate('fecha_orden', $fechaOrden)
+                            ->lockForUpdate()
+                            ->max('numero_dia');
 
-                $orden = OrdenRestaurante::create([
-                    'nombre_cliente' => $this->nombre_cliente ?: 'Consumidor Final',
-                    'mesa' => filled($this->mesa) ? trim($this->mesa) : null,
-                    'notas' => $this->notas,
-                    'total' => $this->total,
-                    'numero_dia' => $numeroDia,
-                    'fecha_orden' => now()->toDateString(),
-                ]);
+                        $numeroDia = ($ultimoNumeroDia ?? 0) + 1;
 
-                foreach ($this->carrito as $item) {
-                    OrdenRestauranteDetalle::create([
-                        'orden_restaurante_id' => $orden->id,
-                        'platillo_id' => $item['id'],
-                        'cantidad' => $item['cantidad'],
-                        'precio_unitario' => $item['precio'],
-                        'subtotal' => $item['precio'] * $item['cantidad'],
-                        'tipo_orden' => $this->tipo_orden,
-                        'numero_personas' => $this->numero_personas,
-                    ]);
+                        $orden = OrdenRestaurante::create([
+                            'nombre_cliente' => $this->nombre_cliente ?: 'Consumidor Final',
+                            'mesa' => filled($this->mesa) ? trim($this->mesa) : null,
+                            'notas' => $this->notas,
+                            'total' => $this->total,
+                            'numero_dia' => $numeroDia,
+                            'fecha_orden' => $fechaOrden,
+                        ]);
+
+                        foreach ($this->carrito as $item) {
+                            OrdenRestauranteDetalle::create([
+                                'orden_restaurante_id' => $orden->id,
+                                'platillo_id' => $item['id'],
+                                'cantidad' => $item['cantidad'],
+                                'precio_unitario' => $item['precio'],
+                                'subtotal' => $item['precio'] * $item['cantidad'],
+                                'tipo_orden' => $this->tipo_orden,
+                                'numero_personas' => $this->numero_personas,
+                            ]);
+                        }
+
+                        return [$orden, $numeroDia];
+                    });
+
+                    break;
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Código 23000 = violación de índice único (fecha_orden, numero_dia).
+                    // Puede pasar si dos cajas envían una orden casi al mismo tiempo; reintentamos
+                    // para recalcular el numero_dia en vez de fallar la orden completa.
+                    $intentosRestantes--;
+
+                    if ($e->getCode() !== '23000' || $intentosRestantes <= 0) {
+                        throw $e;
+                    }
                 }
-
-                return [$orden, $numeroDia];
-            });
+            } while ($intentosRestantes > 0);
 
             $this->limpiarCarrito();
 
@@ -467,28 +515,4 @@ class Dashboard extends Page
             });
     }
 
-    public function eliminarOrden($ordenId): void
-    {
-        try {
-            DB::transaction(function () use ($ordenId) {
-                $orden = OrdenRestaurante::with('detalles')->findOrFail($ordenId);
-                $orden->detalles()->delete();
-                $orden->delete();
-            });
-
-            Notification::make()
-                ->title('Orden eliminada')
-                ->body('La orden fue eliminada de progreso y de cocina.')
-                ->success()
-                ->send();
-        } catch (\Throwable $e) {
-            report($e);
-
-            Notification::make()
-                ->title('No se pudo eliminar la orden')
-                ->body('Revisa el registro del sistema e intenta nuevamente.')
-                ->danger()
-                ->send();
-        }
-    }
 }

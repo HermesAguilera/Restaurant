@@ -119,6 +119,27 @@
             // Inicializar UI
             updateSoundUI();
 
+            // Los navegadores bloquean audio.play() hasta que el usuario interactúe con la
+            // página. Desbloqueamos el <audio> en la primera interacción (clic o tecla) con un
+            // play/pause silencioso, para que la alerta del primer pedido sí suene.
+            let audioUnlocked = false;
+            function unlockAudio() {
+                if (audioUnlocked) return;
+                audioUnlocked = true;
+
+                audio.play().then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                }).catch(() => {
+                    // Si falla igual queda desbloqueado el AudioContext para el beep sintético.
+                });
+
+                document.removeEventListener('click', unlockAudio);
+                document.removeEventListener('keydown', unlockAudio);
+            }
+            document.addEventListener('click', unlockAudio);
+            document.addEventListener('keydown', unlockAudio);
+
             // Alternar sonido activado/desactivado
             toggleBtn.addEventListener('click', () => {
                 soundEnabled = !soundEnabled;
@@ -167,8 +188,11 @@
 
             // Función para reproducir la alerta (MP3 o Sintético)
             function playAlert(isTest = false) {
-                if (!soundEnabled) return;
-                
+                if (!soundEnabled) {
+                    console.warn('[Monitor Cocina] Llegó un pedido nuevo pero el sonido está DESACTIVADO (botón arriba a la derecha).');
+                    return;
+                }
+
                 if (mp3Failed) {
                     playSynthesizedBeep();
                     return;
@@ -199,6 +223,7 @@
                             
                             // Si ya teníamos registrado un ID anterior y este es mayor, es un pedido nuevo
                             if (lastOrderId !== null && currentId > lastOrderId) {
+                                console.log('[Monitor Cocina] Pedido nuevo detectado: #' + currentId + ' (anterior: #' + lastOrderId + ')');
                                 playAlert();
                             }
                             
@@ -209,18 +234,22 @@
                     .catch(error => console.error('Error al consultar pedidos pendientes:', error));
             }
 
-            // Inicializar el baseline con el último ID existente sin reproducir sonido
+            // Inicializar el baseline con el último ID existente sin reproducir sonido.
+            // El polling arranca DESPUÉS de que el baseline se resuelve (incluso si falla),
+            // para que nunca compita con checkNewOrders() por escribir lastOrderId primero.
             fetch('/api/orders/latest-pending')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.has_pending && data.order) {
                         lastOrderId = data.order.id;
                     }
+                    console.log('[Monitor Cocina] Baseline inicial, último pedido pendiente:', lastOrderId);
                 })
-                .catch(error => console.error('Error al inicializar alerta de cocina:', error));
-
-            // Iniciar Polling cada 3 segundos
-            setInterval(checkNewOrders, 3000);
+                .catch(error => console.error('Error al inicializar alerta de cocina:', error))
+                .finally(() => {
+                    checkNewOrders();
+                    setInterval(checkNewOrders, 3000);
+                });
         });
     </script>
 </x-filament-panels::page>

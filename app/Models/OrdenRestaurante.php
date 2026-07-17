@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class OrdenRestaurante extends Model
 {
     protected $fillable = [
-        'nombre_cliente', 'mesa', 'estado', 'total', 'notas', 'numero_dia', 'fecha_orden', 'entregado_at'
+        'nombre_cliente', 'mesa', 'total', 'notas', 'numero_dia', 'fecha_orden', 'entregado_at'
     ];
 
     protected $casts = [

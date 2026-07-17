@@ -37,9 +37,6 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-            ])
             /* ->renderHook(
                 'panels::topbar.end',
                 fn () => view('components.theme-toggle')
@@ -65,6 +62,13 @@ class AdminPanelProvider extends PanelProvider
 
             ->widgets([
                 // Dashboard principal vacío o personalizado
+            ])
+
+            // Los plugins deben registrarse DESPUÉS de discoverResources(): Shield decide si
+            // publica su propio RoleResource revisando $panel->getResources() en el momento
+            // exacto de su registro, y ese registro es síncrono (no perezoso).
+            ->plugins([
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
             ])
 
             ->navigationGroups([

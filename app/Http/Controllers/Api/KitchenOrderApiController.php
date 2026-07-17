@@ -9,13 +9,13 @@ use Illuminate\Http\JsonResponse;
 class KitchenOrderApiController extends Controller
 {
     /**
-     * Devuelve el último pedido con estado 'pendiente' en formato JSON.
+     * Devuelve el último pedido aún no entregado en formato JSON.
      *
      * @return JsonResponse
      */
     public function getLatestPending(): JsonResponse
     {
-        $order = OrdenRestaurante::where('estado', 'pendiente')
+        $order = OrdenRestaurante::whereNull('entregado_at')
             ->orderBy('id', 'desc')
             ->first();
 
@@ -34,7 +34,6 @@ class KitchenOrderApiController extends Controller
                 'id' => $order->id,
                 'nombre_cliente' => $order->nombre_cliente,
                 'mesa' => $order->mesa,
-                'estado' => $order->estado,
                 'created_at' => $order->created_at,
             ],
         ]);
