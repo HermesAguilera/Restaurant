@@ -111,6 +111,29 @@ sudo certbot --nginx -d TU_DOMINIO -d www.TU_DOMINIO
 La app ya confía en el proxy (`trustProxies` en `bootstrap/app.php`), que es lo que
 evita que Filament y Livewire generen URLs `http://` detrás del certificado.
 
+### Sin dominio propio todavía
+
+Let's Encrypt no emite certificados para una IP desnuda (`certbot -d 1.2.3.4`
+falla siempre, no es un bug). Mientras no tengas un dominio, usa
+[sslip.io](https://sslip.io): resuelve cualquier hostname con la IP incrustada de
+vuelta a esa IP sin configurar DNS, y como es un nombre válido, certbot sí emite
+certificado para él.
+
+```bash
+# sustituye los puntos de tu IP por guiones
+sudo sed -i 's/server_name .*/server_name TU-IP-CON-GUIONES.sslip.io;/' /etc/nginx/sites-available/restaurante
+sudo nginx -t && sudo systemctl reload nginx
+
+sudo certbot --nginx -d TU-IP-CON-GUIONES.sslip.io
+
+sudo sed -i 's|^APP_URL=.*|APP_URL=https://TU-IP-CON-GUIONES.sslip.io|' /var/www/restaurante/.env
+cd /var/www/restaurante && php artisan config:cache
+```
+
+Ejemplo: la IP `134.122.112.145` queda como `134-122-112-145.sslip.io`. En
+cuanto compres un dominio real, repite el paso 6 y este apuntando al dominio
+nuevo — sslip.io es solo un puente, no hace falta migrar nada más.
+
 ## 8. Cron del scheduler
 
 `routes/console.php` tiene una tarea diaria que borra las órdenes de restaurante de
