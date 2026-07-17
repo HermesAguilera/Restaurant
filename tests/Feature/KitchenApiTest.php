@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\OrdenRestaurante;
+use App\Models\User;
 
 class KitchenApiTest extends TestCase
 {
@@ -15,6 +16,8 @@ class KitchenApiTest extends TestCase
      */
     public function test_api_returns_latest_pending_order(): void
     {
+        $user = User::factory()->create();
+
         // Crear ordenes
         OrdenRestaurante::create([
             'nombre_cliente' => 'Cliente 1',
@@ -30,7 +33,7 @@ class KitchenApiTest extends TestCase
             'fecha_orden' => now()->toDateString(),
         ]);
 
-        $response = $this->getJson('/api/orders/latest-pending');
+        $response = $this->actingAs($user)->getJson('/api/orders/latest-pending');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -41,5 +44,11 @@ class KitchenApiTest extends TestCase
                     'nombre_cliente' => 'Cliente 2',
                 ],
             ]);
+    }
+
+    public function test_api_rechaza_peticiones_sin_autenticar(): void
+    {
+        $this->getJson('/api/orders/latest-pending')->assertUnauthorized();
+        $this->getJson('/api/orders/history')->assertUnauthorized();
     }
 }

@@ -1,18 +1,12 @@
-# 1. Usamos la versión oficial con Apache para que sirva los assets de Filament (.css, .js)
 FROM php:8.3-apache-bookworm
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
-ENV APP_ENV=production
-ENV APP_DEBUG=false
-ENV PORT=10000
 ENV NODE_OPTIONS=--max-old-space-size=2048
 
-# 2. Configuramos Apache para que su raíz apunte a la carpeta 'public' de Laravel y permita reescritura
+# Apache sirve desde public/ y necesita AllowOverride para el .htaccess de Laravel.
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
-    && sed -i 's|/var/www/|/var/www/html/public|g' /etc/apache2/apache2.conf
-
-# Habilitar mod_rewrite y forzar AllowOverride All dentro del VirtualHost del puerto 10000 (Evita el error 404 Extraviado)
-RUN a2enmod rewrite \
+    && sed -i 's|/var/www/|/var/www/html/public|g' /etc/apache2/apache2.conf \
+    && a2enmod rewrite \
     && sed -i '/<\/VirtualHost>/i \
     <Directory /var/www/html/public>\n\
         Options Indexes FollowSymLinks\n\
@@ -20,20 +14,14 @@ RUN a2enmod rewrite \
         Require all granted\n\
     </Directory>' /etc/apache2/sites-available/000-default.conf
 
-# Cambiamos los puertos por defecto de Apache al 10000 que exige Render
-RUN sed -i 's/Listen 80/Listen 10000/g' /etc/apache2/ports.conf \
-    && sed -i 's/<VirtualHost \*:80>/<VirtualHost \*:10000>/g' /etc/apache2/sites-available/000-default.conf
-
 WORKDIR /var/www/html
 
-# 3. Instalación de dependencias del sistema
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     unzip \
     curl \
     gnupg \
     ca-certificates \
-    libpq-dev \
     libzip-dev \
     libpng-dev \
     libjpeg62-turbo-dev \
@@ -41,29 +29,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# 4. Instalación de Node.js v22 para compilar Tailwind/Vite
+# Node para compilar Tailwind/Vite.
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get update \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# 5. Extensiones de PHP necesarias para Laravel y Filament
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
-        pdo_pgsql \
-        pgsql \
+        pdo_mysql \
         zip \
         gd \
         opcache \
         intl
 
-# Copiamos Composer desde la imagen oficial
+RUN printf 'upload_max_filesize = 12M\npost_max_size = 12M\n' \
+    > /usr/local/etc/php/conf.d/uploads.ini
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copiamos todo el proyecto al contenedor
 COPY . .
 
-# 6. Creamos directorios de caché de Laravel y asignamos permisos al usuario de Apache (www-data)
 RUN mkdir -p storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
@@ -71,7 +57,6 @@ RUN mkdir -p storage/framework/cache \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
-# 7. Instalación de dependencias de PHP y compilación de assets (Vite/Tailwind)
 RUN composer install \
     --no-dev \
     --optimize-autoloader \
@@ -79,18 +64,19 @@ RUN composer install \
     --no-progress \
     --no-scripts
 
-RUN npm install
-RUN npm run build
+RUN npm ci && npm run build
 
-# 8. Optimización de caché en Laravel
 RUN php artisan package:discover --ansi || true
-RUN php artisan optimize:clear || true
-RUN php artisan config:cache || true
-RUN php artisan view:cache || true
 RUN php artisan filament:upgrade || true
-RUN php artisan storage:link || true
 
-EXPOSE 10000
+# config:cache y view:cache NO van aquí: .env no existe en build, así que hornearían
+# la configuración con valores por defecto y las variables de entorno del runtime
+# quedarían ignoradas. El entrypoint las genera al arrancar, ya con el entorno real.
 
-# 9. Comando final: Iniciamos Apache directamente en primer plano
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+EXPOSE 80
+
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]

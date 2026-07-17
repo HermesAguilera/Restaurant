@@ -38,7 +38,7 @@ Route::get('/facturas/{factura}/visualizar', function (Factura $factura) {
         'empresa',
     ]);
     return view('pdf.factura', compact('factura'));
-})->name('facturas.visualizar');
+})->middleware(['web', 'auth'])->name('facturas.visualizar');
 
 Route::get('/admin/historial-pedidos/{orden}/imprimir', function (OrdenRestaurante $orden) {
     abort_unless(auth()->check() && (auth()->user()->hasRole('root') || auth()->user()->can('ventas_ver')), 403);

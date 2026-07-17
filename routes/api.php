@@ -4,6 +4,10 @@ use App\Http\Controllers\Api\OrderHistoryController;
 use App\Http\Controllers\Api\KitchenOrderApiController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/orders/history', [OrderHistoryController::class, 'index']);
-Route::get('/orders/latest-pending', [KitchenOrderApiController::class, 'getLatestPending']);
+// El grupo `api` es stateless: sin el grupo `web` no hay sesión que `auth` pueda leer.
+// Los consumidores son fetch() same-origin desde el panel, así que la cookie ya viaja.
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/orders/history', [OrderHistoryController::class, 'index']);
+    Route::get('/orders/latest-pending', [KitchenOrderApiController::class, 'getLatestPending']);
+});
 

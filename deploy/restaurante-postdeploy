@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Parte del despliegue que necesita root. Se instala en /usr/local/bin, propiedad
+# de root y con permiso 755, y se invoca desde deploy.sh vía sudo NOPASSWD.
+#
+# Las rutas van fijas a propósito: si se aceptaran por argumento o entorno, el
+# usuario `deploy` podría usar este sudo para hacer chown de cualquier ruta del
+# sistema y escalar privilegios.
+set -euo pipefail
+
+APP_DIR=/var/www/restaurante
+PHP_FPM=php8.3-fpm
+
+chown -R www-data:www-data "$APP_DIR/storage" "$APP_DIR/bootstrap/cache"
+chmod -R 775 "$APP_DIR/storage" "$APP_DIR/bootstrap/cache"
+
+systemctl reload "$PHP_FPM"
