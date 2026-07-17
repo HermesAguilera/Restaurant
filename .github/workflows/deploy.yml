@@ -1,0 +1,63 @@
+name: Deploy a producción
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Evita que dos despliegues se pisen; no cancela el que ya está a medias.
+concurrency:
+  group: produccion
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, curl, zip, gd, intl, bcmath, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Cachear dependencias de Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Instalar dependencias
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      # Los tests corren sobre sqlite en memoria (ver phpunit.xml), pero
+      # necesitan un APP_KEY válido.
+      - name: Preparar entorno de pruebas
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Ejecutar tests
+        run: php artisan test
+
+  deploy:
+    name: Desplegar al droplet
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Desplegar por SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/id_ed25519 "$USER@$HOST" 'bash /var/www/restaurante/deploy/deploy.sh'

@@ -12,6 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Nginx es el único ingress y corre en el mismo host que PHP-FPM,
+        // que solo escucha en un socket unix: no hay otra fuente de X-Forwarded-*.
+        $middleware->trustProxies(at: '*');
+
         $middleware->web(append: [
             \App\Http\Middleware\LivewireRequestFixer::class,
             \App\Http\Middleware\CheckCajaAbierta::class,
