@@ -31,7 +31,11 @@ echo "==> Cachés"
 php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
+# No view:cache: resources/views/filament/.../aperturar-caja.blade.php usa
+# <x-filament::form> directo, y ese componente solo lo registra Filament dentro
+# de un panel activo. Compilar todas las vistas fuera de ese contexto falla con
+# "Unable to locate a class or view for component [filament::form]".
+# filament:cache-components cubre el caché que Filament sí necesita.
 php artisan event:cache
 php artisan filament:cache-components
 php artisan storage:link || true

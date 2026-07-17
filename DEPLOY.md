@@ -156,9 +156,24 @@ sudo ufw enable
 ```bash
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
 php artisan event:cache
 php artisan filament:cache-components
+```
+
+**No corras `php artisan view:cache`.** `resources/views/filament/resources/caja-apertura-resource/pages/aperturar-caja.blade.php`
+usa `<x-filament::form>` directo, y Filament solo registra ese componente dentro
+de un panel activo — compilar todas las vistas fuera de ese contexto falla con
+`Unable to locate a class or view for component [filament::form]`. No es nada
+roto: es una incompatibilidad conocida de Filament con ese comando.
+`filament:cache-components` ya cubre el caché que Filament necesita; sin
+`view:cache`, Laravel sigue compilando y cacheando cada vista a disco la
+primera vez que se renderiza, solo que no lo adelanta todo de una vez.
+
+Si ya corriste `view:cache` y falló a medias, limpia el caché parcial que haya
+quedado:
+
+```bash
+php artisan view:clear
 ```
 
 ---

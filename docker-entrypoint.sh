@@ -16,7 +16,8 @@ php artisan storage:link || true
 if [ -n "${APP_KEY:-}" ]; then
     php artisan config:cache || true
     php artisan route:cache || true
-    php artisan view:cache || true
+    # No view:cache: rompe con vistas que usan <x-filament::*> fuera de un panel
+    # activo (ver deploy/deploy.sh). filament:cache-components cubre ese caso.
     php artisan event:cache || true
     php artisan filament:cache-components || true
 else
