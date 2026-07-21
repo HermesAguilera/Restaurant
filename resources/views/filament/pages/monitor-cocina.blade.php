@@ -1,10 +1,120 @@
 <x-filament-panels::page>
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-        <div class="flex gap-4 w-full sm:w-auto">
+    {{--
+        Estilos propios del Monitor de Cocina. Se definen aquí (en la página) con selectores
+        basados en la clase .dark de Filament para no depender de utilidades Tailwind que
+        no vienen compiladas en el CSS de Filament (ej. dark:bg-gray-900/50), lo que hacía
+        que en modo oscuro la card quedara clara y el texto claro resultara invisible.
+    --}}
+    <style>
+        .km-toolbar-btn {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            color: #111827;
+        }
+        .dark .km-toolbar-btn {
+            background-color: #1f2937;
+            border-color: #374151;
+            color: #f3f4f6;
+        }
+
+        .km-card {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .dark .km-card {
+            background-color: #1f2937;   /* gray-800 */
+            border-color: #374151;       /* gray-700 */
+        }
+
+        .km-card__header {
+            padding: 0.65rem 0.9rem;
+            background-color: #f3f4f6;   /* gray-100 */
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .dark .km-card__header {
+            background-color: #111827;   /* gray-900 */
+            border-bottom-color: #374151;
+        }
+
+        /* Textos que deben adaptarse al fondo de la card */
+        .km-title  { color: #111827; }
+        .dark .km-title  { color: #f9fafb; }
+        .km-strong { color: #1f2937; }
+        .dark .km-strong { color: #e5e7eb; }
+        .km-muted  { color: #6b7280; }
+        .dark .km-muted  { color: #9ca3af; }
+        .km-accent { color: #b45309; }   /* amber-700 */
+        .dark .km-accent { color: #fbbf24; } /* amber-400 */
+
+        /* Etiqueta tipo de orden (Comer Aquí / Para Llevar) — barra a lo ancho de la card */
+        .km-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            width: 100%;
+            padding: 0.35rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 800;
+            background-color: #fde68a;   /* amber-200 */
+            color: #92400e;              /* amber-800 */
+        }
+        .dark .km-badge {
+            background-color: #78350f;   /* amber-900 */
+            color: #fcd34d;              /* amber-300 */
+        }
+        .km-badge__personas {
+            font-size: 0.85rem;
+            font-weight: 600;
+            opacity: 0.85;
+        }
+
+        /* Cantidad de cada platillo */
+        .km-qty {
+            background-color: #e5e7eb;
+            color: #111827;
+            padding: 0.15rem 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: 800;
+            min-width: 2.25rem;
+            text-align: center;
+        }
+        .dark .km-qty {
+            background-color: #374151;
+            color: #f9fafb;
+        }
+
+        .km-item-name {
+            color: #111827;
+            font-weight: 600;
+        }
+        .dark .km-item-name { color: #f9fafb; }
+
+        /* Nota de la orden */
+        .km-note {
+            background-color: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+        .dark .km-note {
+            background-color: rgba(127, 29, 29, 0.25);
+            color: #fca5a5;
+            border-color: #7f1d1d;
+        }
+    </style>
+
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mb-4">
+        <div class="flex gap-2 sm:gap-3 w-full sm:w-auto">
             @foreach(['general' => 'Comida General', 'china' => 'Comida China', 'pizza' => 'Pizza'] as $key => $label)
                 <button
                     wire:click="$set('seccion', '{{ $key }}')"
-                    class="px-6 py-2 rounded-xl font-bold transition {{ $seccion === $key ? 'bg-primary-600 text-white shadow' : 'bg-white dark:bg-gray-800 border dark:border-gray-700' }}"
+                    class="px-5 py-2 rounded-xl font-bold transition {{ $seccion === $key ? 'bg-primary-600 text-white shadow' : 'km-toolbar-btn' }}"
                 >
                     {{ $label }}
                 </button>
@@ -12,7 +122,7 @@
         </div>
 
         <!-- Control de Alerta Sonora -->
-        <div class="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-xl border dark:border-gray-700 shadow-sm w-full sm:w-auto justify-center sm:justify-start">
+        <div class="flex items-center gap-2 km-toolbar-btn px-4 py-2 rounded-xl shadow-sm w-full sm:w-auto justify-center sm:justify-start">
             <button id="toggle-sound-btn" class="flex items-center gap-2 text-sm font-semibold transition hover:opacity-80">
                 <span id="sound-icon" class="text-xl">🔊</span>
                 <span id="sound-text" class="text-green-600 dark:text-green-400 font-bold">Sonido Activado</span>
@@ -21,52 +131,48 @@
     </div>
 
     <div wire:poll.5s>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             @forelse($this->ordenes as $orden)
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow border dark:border-gray-700 flex flex-col">
-                    <div class="p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 rounded-t-xl">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="text-lg font-bold">Orden #{{ $orden->id }}</h3>
-                                <div class="text-sm text-gray-500">{{ $orden->created_at->format('h:i A') }} ({{ $orden->created_at->diffForHumans() }})</div>
-
-                                @if($detalleInicial = $orden->detalles->first())
-                                    <div class="mt-1">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-primary-100 text-primary-800">
-                                            {{ $detalleInicial->tipo_orden === 'restaurante' ? '🍽 Comer Aquí' : '🛍 Para Llevar' }}
-                                        </span>
-                                        @if($detalleInicial->tipo_orden === 'restaurante')
-                                            <span class="ml-1 text-xs text-gray-600 font-medium">({{ $detalleInicial->numero_personas }} personas)</span>
-                                        @endif
-                                    </div>
-                                @endif
+                <div class="km-card">
+                    <div class="km-card__header">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="min-w-0">
+                                <h3 class="text-base font-bold km-title leading-tight">Orden #{{ $orden->numeroCocinaPara($seccion) ?? '—' }}</h3>
                             </div>
-                            <div class="text-right">
-                                <div class="font-bold">{{ $orden->nombre_cliente }}</div>
-                                <div class="text-sm text-gray-400">#{{ $orden->numero_dia }}</div>
-                                @if($orden->mesa)
-                                    <div class="mt-1 text-xs font-semibold text-primary-600 dark:text-primary-400">
-                                        Mesa: {{ $orden->mesa }}
-                                    </div>
-                                @endif
+                            <div class="text-right shrink-0">
+                                <div class="text-lg font-extrabold km-strong">{{ $orden->nombre_cliente }}</div>
                             </div>
                         </div>
+
+                        <div class="mt-1 text-sm km-muted">{{ $orden->created_at->format('h:i A') }} ({{ $orden->created_at->diffForHumans() }})</div>
+
+                        @if($detalleInicial = $orden->detalles->first())
+                            <div class="mt-2">
+                                <span class="km-badge">
+                                    {{ $detalleInicial->tipo_orden === 'restaurante' ? '🍽 Comer Aquí' : '🛍 Para Llevar' }}
+                                    @if($detalleInicial->tipo_orden === 'restaurante')
+                                        <span class="km-badge__personas">({{ $detalleInicial->numero_personas }} personas)</span>
+                                    @endif
+                                </span>
+                            </div>
+                        @endif
+
                         @if($orden->notas)
-                            <div class="mt-2 p-2 bg-danger-50 dark:bg-danger-900/20 text-danger-600 rounded text-sm font-bold border border-danger-200 dark:border-danger-800">
+                            <div class="mt-2 p-2 km-note rounded text-sm font-bold">
                                 Nota: {{ $orden->notas }}
                             </div>
                         @endif
                     </div>
 
-                    <div class="p-4 flex-1">
-                        <ul class="space-y-3">
+                    <div class="p-3 flex-1">
+                        <ul class="space-y-2.5">
                             @foreach($orden->detalles->where('platillo.seccion', $seccion)->where('platillo.tipo', 'comida') as $detalle)
-                                <li class="flex items-center space-x-3 text-lg">
-                                    <span class="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-lg font-bold">{{ $detalle->cantidad }}</span>
-                                    <span class="flex-1">{{ $detalle->platillo?->nombre ?? 'Platillo Desconocido' }}</span>
+                                <li class="flex items-center gap-3 text-xl">
+                                    <span class="km-qty">{{ $detalle->cantidad }}</span>
+                                    <span class="flex-1 km-item-name">{{ $detalle->platillo?->nombre ?? 'Platillo Desconocido' }}</span>
                                 </li>
                                 @if($detalle->notas)
-                                    <li class="pl-12 text-sm text-danger-500 italic">
+                                    <li class="pl-12 text-base text-danger-500 dark:text-danger-400 italic font-medium">
                                         * {{ $detalle->notas }}
                                     </li>
                                 @endif
@@ -75,9 +181,9 @@
                     </div>
                 </div>
             @empty
-                <div class="col-span-full py-12 text-center text-gray-500 bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700">
+                <div class="col-span-full py-12 text-center km-muted km-card">
                     <x-heroicon-o-face-smile class="w-16 h-16 mx-auto mb-4 text-gray-400"/>
-                    <h3 class="text-xl font-bold">¡No hay órdenes activas!</h3>
+                    <h3 class="text-xl font-bold km-title">¡No hay órdenes activas!</h3>
                     <p>La cocina está al día.</p>
                 </div>
             @endforelse

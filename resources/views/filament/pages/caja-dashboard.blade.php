@@ -161,7 +161,7 @@
 
                     {{-- Input del Cliente --}}
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Cliente</label>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Nombre del cliente</label>
                         <input
                             type="text"
                             wire:model.blur="nombre_cliente"
@@ -190,7 +190,7 @@
                             {{-- Botón Para Llevar --}}
                             <button
                                 type="button"
-                                wire:click="$set('tipo_orden', 'llevar'); $set('mesa', '')"
+                                wire:click="$set('tipo_orden', 'llevar')"
                                 class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition shadow-sm
                                     {{ $tipo_orden === 'llevar'
                                         ? 'bg-primary-600 text-white ring-1 ring-primary-600'
@@ -201,18 +201,6 @@
                             </button>
                         </div>
                     </div>
-
-                    @if($tipo_orden === 'restaurante')
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Mesa</label>
-                        <input
-                            type="text"
-                            wire:model.blur="mesa"
-                            placeholder="Opcional"
-                            class="w-full rounded-lg border-none ring-1 ring-gray-950/10 dark:ring-white/20 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 px-3 py-2"
-                        />
-                    </div>
-                    @endif
 
                     {{-- Comensales: stepper táctil (Solo se muestra si es Restaurante) --}}
                     @if($tipo_orden === 'restaurante')
@@ -343,9 +331,8 @@
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-700">
-                                <th class="px-4 py-3">#</th>
+                                <th class="px-4 py-3">Cocina</th>
                                 <th class="px-4 py-3">Cliente</th>
-                                <th class="px-4 py-3">Mesa</th>
                                 <th class="px-4 py-3">Platillos</th>
                                 <th class="px-4 py-3">Total</th>
                                 <th class="px-4 py-3">Estado</th>
@@ -356,15 +343,17 @@
                             @foreach($this->ordenesPendientes as $orden)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition">
                                 <td class="px-3 py-3">
-                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm
-                                        {{ $orden->entregado_at ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }}">
-                                        {{ $orden->numero_dia }}
-                                    </span>
+                                    <div class="flex flex-wrap gap-1">
+                                        @forelse($orden->numerosCocina as $numeroCocina)
+                                            <span class="inline-flex items-center rounded-full px-2 py-1 font-bold text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                                {{ ucfirst($numeroCocina->seccion) }} #{{ $numeroCocina->numero }}
+                                            </span>
+                                        @empty
+                                            <span class="text-gray-400">—</span>
+                                        @endforelse
+                                    </div>
                                 </td>
                                 <td class="px-3 py-3 font-medium text-gray-900 dark:text-white text-sm">{{ $orden->nombre_cliente }}</td>
-                                <td class="px-3 py-3 text-gray-600 dark:text-gray-300 text-sm">
-                                    {{ $orden->mesa ?: 'Sin mesa' }}
-                                </td>
                                 <td class="px-3 py-3 text-gray-600 dark:text-gray-300 text-sm max-w-xs">
                                     @foreach($orden->detalles as $d)
                                         <span class="inline-block text-xs">{{ $d->cantidad }}× {{ $d->platillo?->nombre ?? '?' }}</span>@if(!$loop->last), @endif
@@ -443,7 +432,15 @@
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                             @foreach($this->ordenesEntregadas as $orden)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                                <td class="px-4 py-2 font-bold text-gray-500 dark:text-gray-400">#{{ $orden->numero_dia }}</td>
+                                <td class="px-4 py-2 font-bold text-gray-500 dark:text-gray-400">
+                                    @forelse($orden->numerosCocina as $numeroCocina)
+                                        <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs dark:bg-gray-700">
+                                            {{ ucfirst($numeroCocina->seccion) }} #{{ $numeroCocina->numero }}
+                                        </span>
+                                    @empty
+                                        —
+                                    @endforelse
+                                </td>
                                 <td class="px-4 py-2 text-gray-900 dark:text-white">{{ $orden->nombre_cliente }}</td>
                                 <td class="px-4 py-2">
                                     <button

@@ -38,6 +38,13 @@ php artisan route:cache
 # filament:cache-components cubre el caché que Filament sí necesita.
 php artisan event:cache
 php artisan filament:cache-components
+# Publica el JS de Livewire como archivo físico en public/vendor/livewire. Sin esto
+# se sirve por la ruta /livewire/livewire.min.js, cuya URL nunca cambia entre
+# versiones del asset: si un navegador llegó a cachear una mala respuesta de esa
+# URL (pasó con un 404 cacheable por un año), queda roto hasta que expire. El
+# archivo publicado usa otra URL (/vendor/livewire/...) y hay que re-publicarlo en
+# cada deploy para que no quede desfasado del vendor.
+php artisan livewire:publish --assets
 php artisan storage:link || true
 
 echo "==> Permisos y recarga de PHP-FPM"

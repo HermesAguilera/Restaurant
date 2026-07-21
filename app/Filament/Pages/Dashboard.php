@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\OrdenRestaurante;
+use App\Models\OrdenRestauranteCocinaNumero;
 use App\Models\OrdenRestauranteDetalle;
 use App\Models\Platillo;
 use Filament\Actions\Action;
@@ -16,7 +17,6 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Computed;
 
 class Dashboard extends Page
@@ -27,6 +27,13 @@ class Dashboard extends Page
     protected static ?string $slug = 'caja-pos';
     protected static string $view = 'filament.pages.caja-dashboard';
 
+    // Ocultamos el encabezado de la página para aprovechar el espacio vertical.
+    // El nombre del módulo ya aparece en la navegación lateral.
+    public function getHeading(): string
+    {
+        return '';
+    }
+
     public array $carrito = [];
     public string $nombre_cliente = 'Consumidor Final';
     public string $notas = '';
@@ -36,7 +43,6 @@ class Dashboard extends Page
     public string $subfiltro_cocina = 'todos';
     public string $tipo_orden = 'restaurante';
     public int $numero_personas = 1;
-    public string $mesa = '';
     public mixed $ordenDetalle = null;
 
     #[Computed]
@@ -90,17 +96,17 @@ class Dashboard extends Page
     #[Computed]
     public function ordenesPendientes()
     {
-        return OrdenRestaurante::with('detalles.platillo')
+        return OrdenRestaurante::with(['detalles.platillo', 'numerosCocina'])
             ->whereDate('fecha_orden', now()->toDateString())
             ->whereNull('entregado_at')
-            ->orderBy('numero_dia', 'asc')
+            ->orderBy('created_at', 'asc')
             ->get();
     }
 
     #[Computed]
     public function ordenesEntregadas()
     {
-        return OrdenRestaurante::with('detalles.platillo')
+        return OrdenRestaurante::with(['detalles.platillo', 'numerosCocina'])
             ->whereDate('fecha_orden', now()->toDateString())
             ->whereNotNull('entregado_at')
             ->orderBy('updated_at', 'desc')
@@ -179,7 +185,6 @@ class Dashboard extends Page
         $this->notas = '';
         $this->numero_personas = 1;
         $this->tipo_orden = 'restaurante';
-        $this->mesa = '';
     }
 
 
@@ -200,19 +205,21 @@ class Dashboard extends Page
 
             do {
                 try {
-                    [$orden, $numeroDia] = DB::transaction(function () use ($fechaOrden) {
-                        $ultimoNumeroDia = OrdenRestaurante::whereDate('fecha_orden', $fechaOrden)
-                            ->lockForUpdate()
-                            ->max('numero_dia');
-
-                        $numeroDia = ($ultimoNumeroDia ?? 0) + 1;
+                    [$orden, $numerosCocina] = DB::transaction(function () use ($fechaOrden) {
+                        $seccionesCocina = Platillo::query()
+                            ->whereIn('id', collect($this->carrito)->pluck('id'))
+                            ->where('tipo', 'comida')
+                            ->whereNotNull('seccion')
+                            ->pluck('seccion')
+                            ->unique()
+                            ->sort()
+                            ->values();
 
                         $orden = OrdenRestaurante::create([
                             'nombre_cliente' => $this->nombre_cliente ?: 'Consumidor Final',
-                            'mesa' => filled($this->mesa) ? trim($this->mesa) : null,
+                            'mesa' => null,
                             'notas' => $this->notas,
                             'total' => $this->total,
-                            'numero_dia' => $numeroDia,
                             'fecha_orden' => $fechaOrden,
                         ]);
 
@@ -228,14 +235,33 @@ class Dashboard extends Page
                             ]);
                         }
 
-                        return [$orden, $numeroDia];
+                        $numerosCocina = [];
+
+                        foreach ($seccionesCocina as $seccion) {
+                            $ultimoNumero = OrdenRestauranteCocinaNumero::query()
+                                ->whereDate('fecha_orden', $fechaOrden)
+                                ->where('seccion', $seccion)
+                                ->lockForUpdate()
+                                ->max('numero');
+
+                            $numero = ($ultimoNumero ?? 0) + 1;
+
+                            $orden->numerosCocina()->create([
+                                'seccion' => $seccion,
+                                'fecha_orden' => $fechaOrden,
+                                'numero' => $numero,
+                            ]);
+
+                            $numerosCocina[] = ucfirst($seccion) . " #{$numero}";
+                        }
+
+                        return [$orden, $numerosCocina];
                     });
 
                     break;
                 } catch (\Illuminate\Database\QueryException $e) {
-                    // Código 23000 = violación de índice único (fecha_orden, numero_dia).
-                    // Puede pasar si dos cajas envían una orden casi al mismo tiempo; reintentamos
-                    // para recalcular el numero_dia en vez de fallar la orden completa.
+                    // Dos cajas pueden intentar asignar el mismo número a una sección al mismo tiempo.
+                    // Reintentamos la transacción para recalcular la secuencia de esa cocina.
                     $intentosRestantes--;
 
                     if ($e->getCode() !== '23000' || $intentosRestantes <= 0) {
@@ -247,7 +273,7 @@ class Dashboard extends Page
             $this->limpiarCarrito();
 
             Notification::make()
-                ->title("✅ Orden #{$numeroDia} enviada a cocina")
+                ->title('✅ Orden enviada a cocina' . (empty($numerosCocina) ? '' : ': ' . implode(', ', $numerosCocina)))
                 ->success()
                 ->duration(3000)
                 ->send();
@@ -316,7 +342,6 @@ class Dashboard extends Page
 
                 return [
                     'nombre_cliente' => $orden->nombre_cliente,
-                    'mesa' => $orden->mesa,
                     'notas' => $orden->notas,
                     'tipo_orden' => $primerDetalle?->tipo_orden ?? 'restaurante',
                     'numero_personas' => (int) ($primerDetalle?->numero_personas ?? 1),
@@ -334,12 +359,8 @@ class Dashboard extends Page
                     ->schema([
                         Grid::make(['default' => 1, 'md' => 2])->schema([
                             TextInput::make('nombre_cliente')
-                                ->label('Cliente')
+                                ->label('Nombre del cliente')
                                 ->required()
-                                ->maxLength(255),
-                            TextInput::make('mesa')
-                                ->label('Mesa')
-                                ->placeholder('Opcional')
                                 ->maxLength(255),
                             Select::make('tipo_orden')
                                 ->label('Tipo de orden')
@@ -435,7 +456,6 @@ class Dashboard extends Page
 
                         $orden->update([
                             'nombre_cliente' => $data['nombre_cliente'] ?: 'Consumidor Final',
-                            'mesa' => filled($data['mesa'] ?? null) ? trim($data['mesa']) : null,
                             'notas' => $data['notas'] ?? '',
                             'total' => $total,
                         ]);
