@@ -16,9 +16,16 @@ class MonitorCocina extends Page
 
     public $seccion = 'general'; // 'general', 'china', 'pizza'
 
+    // Ocultamos el encabezado de la página para aprovechar el espacio vertical.
+    // El nombre del módulo ya aparece en la navegación lateral.
+    public function getHeading(): string
+    {
+        return '';
+    }
+
     public function getOrdenesProperty()
     {
-        $query = OrdenRestaurante::with(['detalles.platillo' => function($query) {
+        $query = OrdenRestaurante::with(['numerosCocina', 'detalles.platillo' => function($query) {
                 $query->where('seccion', $this->seccion)
                       ->where('tipo', 'comida'); // Exclude bebidas
             }])

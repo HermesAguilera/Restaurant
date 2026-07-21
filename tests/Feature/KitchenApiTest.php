@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\OrdenRestaurante;
+use App\Models\OrdenRestauranteCocinaNumero;
 use App\Models\User;
 
 class KitchenApiTest extends TestCase
@@ -21,14 +22,12 @@ class KitchenApiTest extends TestCase
         // Crear ordenes
         OrdenRestaurante::create([
             'nombre_cliente' => 'Cliente 1',
-            'estado' => 'pendiente',
             'numero_dia' => 1,
             'fecha_orden' => now()->toDateString(),
         ]);
 
         $latest = OrdenRestaurante::create([
             'nombre_cliente' => 'Cliente 2',
-            'estado' => 'pendiente',
             'numero_dia' => 2,
             'fecha_orden' => now()->toDateString(),
         ]);
@@ -50,5 +49,45 @@ class KitchenApiTest extends TestCase
     {
         $this->getJson('/api/orders/latest-pending')->assertUnauthorized();
         $this->getJson('/api/orders/history')->assertUnauthorized();
+    }
+
+    public function test_kitchen_order_numbers_are_independent_for_each_section(): void
+    {
+        $fecha = now()->toDateString();
+
+        $primeraOrden = OrdenRestaurante::create([
+            'nombre_cliente' => 'Cliente 1',
+            'fecha_orden' => $fecha,
+        ]);
+        $segundaOrden = OrdenRestaurante::create([
+            'nombre_cliente' => 'Cliente 2',
+            'fecha_orden' => $fecha,
+        ]);
+
+        OrdenRestauranteCocinaNumero::create([
+            'orden_restaurante_id' => $primeraOrden->id,
+            'seccion' => 'general',
+            'fecha_orden' => $fecha,
+            'numero' => 1,
+        ]);
+        OrdenRestauranteCocinaNumero::create([
+            'orden_restaurante_id' => $primeraOrden->id,
+            'seccion' => 'china',
+            'fecha_orden' => $fecha,
+            'numero' => 1,
+        ]);
+        OrdenRestauranteCocinaNumero::create([
+            'orden_restaurante_id' => $segundaOrden->id,
+            'seccion' => 'general',
+            'fecha_orden' => $fecha,
+            'numero' => 2,
+        ]);
+
+        $primeraOrden->load('numerosCocina');
+        $segundaOrden->load('numerosCocina');
+
+        $this->assertSame(1, $primeraOrden->numeroCocinaPara('general'));
+        $this->assertSame(1, $primeraOrden->numeroCocinaPara('china'));
+        $this->assertSame(2, $segundaOrden->numeroCocinaPara('general'));
     }
 }
