@@ -57,7 +57,10 @@ jobs:
           KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s' "$SSH_KEY" > ~/.ssh/id_ed25519
+          # printf '%s\n' asegura el salto de línea final que exige OpenSSH, y
+          # tr -d '\r' elimina retornos de carro (CRLF) si el secret se pegó desde
+          # Windows. Sin esto la llave queda malformada: "error in libcrypto".
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
           ssh -i ~/.ssh/id_ed25519 "$USER@$HOST" 'bash /var/www/restaurante/deploy/deploy.sh'
