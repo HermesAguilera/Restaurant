@@ -96,8 +96,10 @@ class Dashboard extends Page
     #[Computed]
     public function ordenesPendientes()
     {
+        // Sin filtro de fecha: un pedido sin entregar debe seguir siendo visible (y accionable
+        // desde el botón "Entregar") sin importar que haya cruzado la medianoche. De lo contrario
+        // queda invisible aquí pero sigue apareciendo indefinidamente en el Monitor de Cocina.
         return OrdenRestaurante::with(['detalles.platillo', 'numerosCocina'])
-            ->whereDate('fecha_orden', now()->toDateString())
             ->whereNull('entregado_at')
             ->orderBy('created_at', 'asc')
             ->get();
