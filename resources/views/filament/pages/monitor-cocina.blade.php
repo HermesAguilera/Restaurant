@@ -110,14 +110,19 @@
     </style>
 
     <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mb-4">
+        {{--
+            Cada sección tiene su propia ruta (ej. /admin/monitor-cocina/pizza) para poder
+            abrir monitores directamente en una sección desde un script/acceso directo.
+            Los botones ahora son enlaces que navegan a esas rutas.
+        --}}
         <div class="flex gap-2 sm:gap-3 w-full sm:w-auto">
-            @foreach(['general' => 'Comida General', 'china' => 'Comida China', 'pizza' => 'Pizza'] as $key => $label)
-                <button
-                    wire:click="$set('seccion', '{{ $key }}')"
-                    class="px-5 py-2 rounded-xl font-bold transition {{ $seccion === $key ? 'bg-primary-600 text-white shadow' : 'km-toolbar-btn' }}"
+            @foreach($this->seccionTabs as $tab)
+                <a
+                    href="{{ $tab['url'] }}"
+                    class="px-5 py-2 rounded-xl font-bold transition {{ $tab['active'] ? 'bg-primary-600 text-white shadow' : 'km-toolbar-btn' }}"
                 >
-                    {{ $label }}
-                </button>
+                    {{ $tab['label'] }}
+                </a>
             @endforeach
         </div>
 
@@ -201,7 +206,11 @@
             const soundText = document.getElementById('sound-text');
 
             let soundEnabled = localStorage.getItem('kitchen_sound_enabled') !== 'false';
-            let lastOrderId = null;
+            // 0 en vez de null: como los IDs autoincrementales siempre son >= 1, este valor
+            // funciona como "no hay pedido pendiente todavía" y permite que la comparación
+            // `currentId > lastOrderId` detecte el primer pedido del día sin una guarda aparte
+            // (con `null` esa guarda impedía que sonara la alerta del primer pedido).
+            let lastOrderId = 0;
             let mp3Failed = false;
 
             // Detectar si el archivo MP3 falla al cargar (ej. 404)
@@ -327,8 +336,8 @@
                         if (data.success && data.has_pending && data.order) {
                             const currentId = data.order.id;
                             
-                            // Si ya teníamos registrado un ID anterior y este es mayor, es un pedido nuevo
-                            if (lastOrderId !== null && currentId > lastOrderId) {
+                            // Si este ID es mayor al último registrado, es un pedido nuevo
+                            if (currentId > lastOrderId) {
                                 console.log('[Monitor Cocina] Pedido nuevo detectado: #' + currentId + ' (anterior: #' + lastOrderId + ')');
                                 playAlert();
                             }
