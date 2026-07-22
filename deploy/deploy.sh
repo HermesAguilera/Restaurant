@@ -44,7 +44,16 @@ php artisan filament:cache-components
 # URL (pasó con un 404 cacheable por un año), queda roto hasta que expire. El
 # archivo publicado usa otra URL (/vendor/livewire/...) y hay que re-publicarlo en
 # cada deploy para que no quede desfasado del vendor.
-php artisan livewire:publish --assets
+# public/vendor/livewire pudo quedar como propiedad de root desde la instalacion
+# inicial (un livewire:publish corrido como root), lo que impide que el usuario
+# deploy sobrescriba los archivos y hacia fallar el despliegue con
+# "Unable to write file at location: livewire.esm.js". Borrar la carpeta primero
+# la recrea limpia como deploy (el permiso de borrado depende del directorio padre
+# public/vendor, no del dueno de los archivos). El "|| echo" evita que un problema
+# de permisos aqui aborte el deploy y bloquee la recarga de PHP-FPM posterior.
+rm -rf public/vendor/livewire 2>/dev/null || true
+php artisan livewire:publish --assets \
+    || echo "AVISO: no se pudieron republicar los assets de Livewire (permisos); se conservan los existentes."
 php artisan storage:link || true
 
 echo "==> Permisos y recarga de PHP-FPM"
