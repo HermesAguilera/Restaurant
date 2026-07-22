@@ -11,3 +11,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/orders/latest-pending', [KitchenOrderApiController::class, 'getLatestPending']);
 });
 
+// Endpoint PÚBLICO (sin login) para la alerta sonora de los monitores de cocina.
+// Solo expone el último pedido pendiente (id/cliente/mesa/hora); es el mismo dato
+// que ya muestran las pantallas de cocina públicas en /cocina/*.
+Route::get('/public/kitchen/latest-pending', [KitchenOrderApiController::class, 'getLatestPending']);
+

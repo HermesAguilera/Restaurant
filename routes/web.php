@@ -51,6 +51,17 @@ Route::get('/admin/historial-pedidos/{orden}/imprimir', function (OrdenRestauran
 })->middleware(['web', 'auth'])->name('historial-pedidos.imprimir');
 
 // ==========================================
+// 2.5 MONITORES DE COCINA PÚBLICOS (SIN LOGIN)
+// ==========================================
+
+// Pantallas de cocina de solo lectura, sin mouse ni teclado: no requieren login.
+// Rutas: /cocina/comida-general, /cocina/comida-china, /cocina/pizza
+// (sin sección abre "Comida General" por defecto). Muestran todos los pedidos
+// pendientes reutilizando la misma consulta que el monitor del panel /admin.
+Route::get('/cocina/{seccion?}', \App\Livewire\MonitorCocinaPublico::class)
+    ->name('cocina.publico');
+
+// ==========================================
 // 3. CONTROL DE ACCESO Y REDIRECCIONES (Corregido)
 // ==========================================
 
