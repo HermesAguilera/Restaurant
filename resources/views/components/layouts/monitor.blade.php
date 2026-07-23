@@ -19,8 +19,10 @@
             -webkit-font-smoothing: antialiased;
         }
     </style>
+    @livewireStyles
 </head>
 <body>
     {{ $slot }}
+    @livewireScripts
 </body>
 </html>
