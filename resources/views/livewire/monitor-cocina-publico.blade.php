@@ -306,6 +306,7 @@
                 if (!soundEnabled) return;
                 seccion = SYNTH_TONES[seccion] ? seccion : 'general';
                 audio.src = '/sounds/new-order-' + seccion + '.mp3';
+                audio.load(); // fuerza cargar el nuevo archivo, no reusar el buffer anterior
                 audio.currentTime = 0;
                 audio.play().catch(error => {
                     if (error.name === 'NotAllowedError') {

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Filament\Pages\MonitorCocina;
 use App\Http\Controllers\Controller;
 use App\Models\OrdenRestaurante;
 use Illuminate\Http\JsonResponse;
@@ -45,9 +44,10 @@ class KitchenOrderApiController extends Controller
     }
 
     /**
-     * Sección de cocina "principal" del pedido: la primera (según el orden de
-     * MonitorCocina::SECCIONES) que tenga platillos de comida. Un pedido puede
-     * abarcar varias secciones, pero el parlante único suena una sola vez.
+     * Sección de cocina "principal" del pedido. Un pedido puede abarcar varias
+     * secciones, pero el parlante único suena una sola vez, así que se prioriza
+     * la sección especial (pizza, china) sobre 'general', que es el catch-all:
+     * si un pedido lleva pizza o comida china, se anuncia con ESE sonido.
      */
     private function seccionDe(OrdenRestaurante $order): string
     {
@@ -59,7 +59,12 @@ class KitchenOrderApiController extends Controller
             ->filter()
             ->unique();
 
-        return collect(MonitorCocina::SECCIONES)->pluck('key')
-            ->first(fn ($key) => $secciones->contains($key)) ?? 'general';
+        foreach (['pizza', 'china', 'general'] as $key) {
+            if ($secciones->contains($key)) {
+                return $key;
+            }
+        }
+
+        return 'general';
     }
 }
