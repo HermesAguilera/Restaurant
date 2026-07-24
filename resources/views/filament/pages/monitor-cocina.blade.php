@@ -195,15 +195,23 @@
         </div>
     </div>
 
-    <!-- Elemento de Audio Oculto -->
-    <audio id="new-order-sound" src="/sounds/new-order.mp3" preload="auto"></audio>
+    <!-- Elemento de Audio Oculto (el src se reasigna por sección al reproducir la cola) -->
+    <audio id="new-order-sound" src="/sounds/new-order-{{ $seccion }}.mp3" preload="auto"></audio>
 
     <script>
+        // Tonos distintos por sección para el beep sintético de respaldo.
+        const SYNTH_TONES = {
+            general: [[587.33, 0, 0.4], [880.00, 0.15, 0.6]],
+            china:   [[440.00, 0, 0.4], [659.25, 0.15, 0.6]],
+            pizza:   [[783.99, 0, 0.35], [1046.50, 0.18, 0.6]],
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             const audio = document.getElementById('new-order-sound');
             const toggleBtn = document.getElementById('toggle-sound-btn');
             const soundIcon = document.getElementById('sound-icon');
             const soundText = document.getElementById('sound-text');
+            const SECCION = @json($seccion);
 
             let soundEnabled = localStorage.getItem('kitchen_sound_enabled') !== 'false';
             // 0 en vez de null: como los IDs autoincrementales siempre son >= 1, este valor
@@ -211,13 +219,6 @@
             // `currentId > lastOrderId` detecte el primer pedido del día sin una guarda aparte
             // (con `null` esa guarda impedía que sonara la alerta del primer pedido).
             let lastOrderId = 0;
-            let mp3Failed = false;
-
-            // Detectar si el archivo MP3 falla al cargar (ej. 404)
-            audio.addEventListener('error', () => {
-                mp3Failed = true;
-                console.warn('No se pudo cargar /sounds/new-order.mp3. Se usará el pitido de la API Web Audio como alternativa.');
-            });
 
             function updateSoundUI() {
                 if (soundEnabled) {
@@ -263,68 +264,68 @@
 
                 if (soundEnabled) {
                     // Intentar reproducir para desbloquear la política de audio del navegador
-                    playAlert(true);
+                    playAlert(SECCION, true);
                 }
             });
 
-            // Pitido sintético como fallback utilizando la API de Audio Web
-            function playSynthesizedBeep() {
+            // Pitido sintético como fallback, con tono propio por sección.
+            function playSynthesizedBeep(seccion) {
                 try {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     if (!AudioContext) return;
-                    
+
                     const audioCtx = new AudioContext();
-                    
+
                     const playNote = (freq, startTime, duration) => {
                         const osc = audioCtx.createOscillator();
                         const gainNode = audioCtx.createGain();
-                        
+
                         osc.type = 'sine';
                         osc.frequency.setValueAtTime(freq, startTime);
-                        
+
                         gainNode.gain.setValueAtTime(0.3, startTime);
                         gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-                        
+
                         osc.connect(gainNode);
                         gainNode.connect(audioCtx.destination);
-                        
+
                         osc.start(startTime);
                         osc.stop(startTime + duration);
                     };
-                    
+
                     const now = audioCtx.currentTime;
-                    // Chime agradable: Dos notas seguidas (Re5 y La5)
-                    playNote(587.33, now, 0.4);
-                    playNote(880.00, now + 0.15, 0.6);
+                    (SYNTH_TONES[seccion] || SYNTH_TONES.general).forEach(
+                        ([freq, offset, duration]) => playNote(freq, now + offset, duration)
+                    );
                 } catch (e) {
                     console.error('No se pudo generar el tono sintético de audio:', e);
                 }
             }
 
-            // Función para reproducir la alerta (MP3 o Sintético)
-            function playAlert(isTest = false) {
+            // Reproduce el sonido de cada sección del pedido en secuencia (un pedido
+            // con pizza, china y general suena con los tres). Si el mp3 no carga, cae
+            // al beep sintético propio de esa sección.
+            function playAlert(secciones, isTest = false) {
                 if (!soundEnabled) {
                     console.warn('[Monitor Cocina] Llegó un pedido nuevo pero el sonido está DESACTIVADO (botón arriba a la derecha).');
                     return;
                 }
+                const cola = (Array.isArray(secciones) ? secciones : [secciones])
+                    .map(s => SYNTH_TONES[s] ? s : 'general');
+                reproducirCola(cola.length ? cola : ['general'], isTest);
+            }
 
-                if (mp3Failed) {
-                    playSynthesizedBeep();
-                    return;
-                }
-
+            function reproducirCola(cola, isTest) {
+                if (!cola.length) return;
+                const seccion = cola.shift();
+                audio.onended = () => { audio.onended = null; reproducirCola(cola, isTest); };
+                audio.src = '/sounds/new-order-' + seccion + '.mp3';
+                audio.load(); // fuerza cargar el nuevo archivo, no reusar el buffer anterior
                 audio.currentTime = 0;
                 audio.play().catch(error => {
-                    if (error.name === 'NotAllowedError') {
-                        console.warn('La reproducción automática fue bloqueada por el navegador. Se requiere interacción del usuario.');
-                        if (isTest) {
-                            // Si es un test directo, intentamos forzar beep por si acaso
-                            playSynthesizedBeep();
-                        }
-                    } else {
-                        // Otro error (ej. archivo no encontrado), usar pitido sintético
-                        playSynthesizedBeep();
-                    }
+                    audio.onended = null;
+                    if (error.name !== 'NotAllowedError' || isTest) playSynthesizedBeep(seccion);
+                    reproducirCola(cola, isTest); // sigue con las demás aunque falle una
                 });
             }
 
@@ -338,8 +339,8 @@
                             
                             // Si este ID es mayor al último registrado, es un pedido nuevo
                             if (currentId > lastOrderId) {
-                                console.log('[Monitor Cocina] Pedido nuevo detectado: #' + currentId + ' (anterior: #' + lastOrderId + ')');
-                                playAlert();
+                                console.log('[Monitor Cocina] Pedido nuevo detectado: #' + currentId + ' (' + (data.order.secciones || []).join(', ') + ')');
+                                playAlert(data.order.secciones);
                             }
                             
                             // Actualizar el último ID visto
