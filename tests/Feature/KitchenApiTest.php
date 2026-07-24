@@ -45,6 +45,18 @@ class KitchenApiTest extends TestCase
             ]);
     }
 
+    public function test_public_endpoint_incluye_la_seccion_del_pedido(): void
+    {
+        $pizza = \App\Models\Platillo::create(['nombre' => 'Pepperoni', 'precio' => 20, 'seccion' => 'pizza', 'tipo' => 'comida']);
+
+        $orden = OrdenRestaurante::create(['nombre_cliente' => 'A', 'fecha_orden' => now()->toDateString()]);
+        $orden->detalles()->create(['platillo_id' => $pizza->id, 'cantidad' => 1, 'precio_unitario' => 20, 'subtotal' => 20]);
+
+        $this->getJson('/api/public/kitchen/latest-pending')
+            ->assertOk()
+            ->assertJson(['has_pending' => true, 'order' => ['id' => $orden->id, 'seccion' => 'pizza']]);
+    }
+
     public function test_api_rechaza_peticiones_sin_autenticar(): void
     {
         $this->getJson('/api/orders/latest-pending')->assertUnauthorized();

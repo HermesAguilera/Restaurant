@@ -242,12 +242,6 @@
 
             let soundEnabled = localStorage.getItem('kitchen_sound_enabled') !== 'false';
             let lastOrderId = 0;
-            let mp3Failed = false;
-
-            audio.addEventListener('error', () => {
-                mp3Failed = true;
-                console.warn('No se pudo cargar /sounds/new-order.mp3. Se usará el pitido sintético.');
-            });
 
             function updateSoundUI() {
                 if (soundEnabled) {
@@ -277,10 +271,10 @@
                 soundEnabled = !soundEnabled;
                 localStorage.setItem('kitchen_sound_enabled', soundEnabled);
                 updateSoundUI();
-                if (soundEnabled) playAlert(true);
+                if (soundEnabled) playAlert(SECCION, true);
             });
 
-            function playSynthesizedBeep() {
+            function playSynthesizedBeep(seccion) {
                 try {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     if (!AudioContext) return;
@@ -298,7 +292,7 @@
                         osc.stop(startTime + duration);
                     };
                     const now = audioCtx.currentTime;
-                    (SYNTH_TONES[SECCION] || SYNTH_TONES.general).forEach(
+                    (SYNTH_TONES[seccion] || SYNTH_TONES.general).forEach(
                         ([freq, offset, duration]) => playNote(freq, now + offset, duration)
                     );
                 } catch (e) {
@@ -306,15 +300,18 @@
                 }
             }
 
-            function playAlert(isTest = false) {
+            // Reproduce el sonido de la sección del pedido; si el mp3 no carga,
+            // cae al beep sintético (también propio de esa sección).
+            function playAlert(seccion, isTest = false) {
                 if (!soundEnabled) return;
-                if (mp3Failed) { playSynthesizedBeep(); return; }
+                seccion = SYNTH_TONES[seccion] ? seccion : 'general';
+                audio.src = '/sounds/new-order-' + seccion + '.mp3';
                 audio.currentTime = 0;
                 audio.play().catch(error => {
                     if (error.name === 'NotAllowedError') {
-                        if (isTest) playSynthesizedBeep();
+                        if (isTest) playSynthesizedBeep(seccion);
                     } else {
-                        playSynthesizedBeep();
+                        playSynthesizedBeep(seccion);
                     }
                 });
             }
@@ -326,8 +323,8 @@
                         if (data.success && data.has_pending && data.order) {
                             const currentId = data.order.id;
                             if (currentId > lastOrderId) {
-                                console.log('[Monitor Cocina] Pedido nuevo: #' + currentId);
-                                playAlert();
+                                console.log('[Monitor Cocina] Pedido nuevo: #' + currentId + ' (' + data.order.seccion + ')');
+                                playAlert(data.order.seccion);
                             }
                             lastOrderId = currentId;
                         }
