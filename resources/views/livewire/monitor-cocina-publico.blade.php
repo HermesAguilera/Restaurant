@@ -211,11 +211,27 @@
             </div>
         </div>
 
-        <audio id="new-order-sound" src="/sounds/new-order.mp3" preload="auto"></audio>
+        {{-- Sonido propio por sección; si el archivo no existe, cae al beep sintético (también distinto por sección). --}}
+        <audio id="new-order-sound" src="/sounds/new-order-{{ $seccion }}.mp3" preload="auto"></audio>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // Guard de ejecución única: el script vive dentro del componente Livewire
+        // (wire:poll.5s), que puede re-ejecutarlo en cada morph. Sin esto se apilan
+        // varios setInterval y cada pedido sonaría 3-4 veces.
+        if (window.__kitchenMonitorInit) { /* ya inicializado */ } else {
+        window.__kitchenMonitorInit = true;
+
+        const SECCION = @json($seccion);
+
+        // Tonos distintos por sección para el beep sintético de respaldo.
+        const SYNTH_TONES = {
+            general: [[587.33, 0, 0.4], [880.00, 0.15, 0.6]],
+            china:   [[440.00, 0, 0.4], [659.25, 0.15, 0.6]],
+            pizza:   [[783.99, 0, 0.35], [1046.50, 0.18, 0.6]],
+        };
+
+        const runInit = () => {
             const audio = document.getElementById('new-order-sound');
             const toggleBtn = document.getElementById('toggle-sound-btn');
             const soundIcon = document.getElementById('sound-icon');
@@ -282,8 +298,9 @@
                         osc.stop(startTime + duration);
                     };
                     const now = audioCtx.currentTime;
-                    playNote(587.33, now, 0.4);
-                    playNote(880.00, now + 0.15, 0.6);
+                    (SYNTH_TONES[SECCION] || SYNTH_TONES.general).forEach(
+                        ([freq, offset, duration]) => playNote(freq, now + offset, duration)
+                    );
                 } catch (e) {
                     console.error('No se pudo generar el tono sintético:', e);
                 }
@@ -330,6 +347,13 @@
                     checkNewOrders();
                     setInterval(checkNewOrders, 3000);
                 });
-        });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', runInit);
+        } else {
+            runInit();
+        }
+        } // fin guard __kitchenMonitorInit
     </script>
 </div>
