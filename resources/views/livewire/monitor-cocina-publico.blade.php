@@ -310,17 +310,22 @@
                 reproducirCola(cola.length ? cola : ['general'], isTest);
             }
 
+            // Pausa entre los sonidos de un pedido multisección: así no se solapan
+            // y el trabajador de cada sección alcanza a distinguir el suyo.
+            const GAP_MS = 1000;
             function reproducirCola(cola, isTest) {
                 if (!cola.length) return;
                 const seccion = cola.shift();
-                audio.onended = () => { audio.onended = null; reproducirCola(cola, isTest); };
+                // Espera 1s antes del siguiente sonido; sin espera si ya no quedan.
+                const siguiente = () => setTimeout(() => reproducirCola(cola, isTest), cola.length ? GAP_MS : 0);
+                audio.onended = () => { audio.onended = null; siguiente(); };
                 audio.src = '/sounds/new-order-' + seccion + '.mp3';
                 audio.load(); // fuerza cargar el nuevo archivo, no reusar el buffer anterior
                 audio.currentTime = 0;
                 audio.play().catch(error => {
                     audio.onended = null;
                     if (error.name !== 'NotAllowedError' || isTest) playSynthesizedBeep(seccion);
-                    reproducirCola(cola, isTest); // sigue con las demás aunque falle una
+                    siguiente(); // sigue con las demás aunque falle una
                 });
             }
 
