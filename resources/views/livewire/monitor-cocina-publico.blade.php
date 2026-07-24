@@ -318,12 +318,12 @@
                 const seccion = cola.shift();
                 // Espera 1s antes del siguiente sonido; sin espera si ya no quedan.
                 const siguiente = () => setTimeout(() => reproducirCola(cola, isTest), cola.length ? GAP_MS : 0);
-                audio.onended = () => { audio.onended = null; siguiente(); };
-                audio.src = '/sounds/new-order-' + seccion + '.mp3';
-                audio.load(); // fuerza cargar el nuevo archivo, no reusar el buffer anterior
-                audio.currentTime = 0;
-                audio.play().catch(error => {
-                    audio.onended = null;
+                // Audio propio por sonido (no el <audio> compartido del DOM): el
+                // re-render de Livewire (wire:poll.5s) resetea el src del elemento y
+                // abortaba el sonido en curso, cortando la cadena antes de 'general'.
+                const a = new Audio('/sounds/new-order-' + seccion + '.mp3');
+                a.onended = siguiente;
+                a.play().catch(error => {
                     if (error.name !== 'NotAllowedError' || isTest) playSynthesizedBeep(seccion);
                     siguiente(); // sigue con las demás aunque falle una
                 });
