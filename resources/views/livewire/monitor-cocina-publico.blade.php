@@ -300,20 +300,27 @@
                 }
             }
 
-            // Reproduce el sonido de la sección del pedido; si el mp3 no carga,
-            // cae al beep sintético (también propio de esa sección).
-            function playAlert(seccion, isTest = false) {
+            // Reproduce el sonido de cada sección del pedido en secuencia (un
+            // pedido con pizza y china suena con ambos). Si el mp3 no carga, cae
+            // al beep sintético propio de esa sección.
+            function playAlert(secciones, isTest = false) {
                 if (!soundEnabled) return;
-                seccion = SYNTH_TONES[seccion] ? seccion : 'general';
+                const cola = (Array.isArray(secciones) ? secciones : [secciones])
+                    .map(s => SYNTH_TONES[s] ? s : 'general');
+                reproducirCola(cola.length ? cola : ['general'], isTest);
+            }
+
+            function reproducirCola(cola, isTest) {
+                if (!cola.length) return;
+                const seccion = cola.shift();
+                audio.onended = () => { audio.onended = null; reproducirCola(cola, isTest); };
                 audio.src = '/sounds/new-order-' + seccion + '.mp3';
                 audio.load(); // fuerza cargar el nuevo archivo, no reusar el buffer anterior
                 audio.currentTime = 0;
                 audio.play().catch(error => {
-                    if (error.name === 'NotAllowedError') {
-                        if (isTest) playSynthesizedBeep(seccion);
-                    } else {
-                        playSynthesizedBeep(seccion);
-                    }
+                    audio.onended = null;
+                    if (error.name !== 'NotAllowedError' || isTest) playSynthesizedBeep(seccion);
+                    reproducirCola(cola, isTest); // sigue con las demás aunque falle una
                 });
             }
 
@@ -324,8 +331,8 @@
                         if (data.success && data.has_pending && data.order) {
                             const currentId = data.order.id;
                             if (currentId > lastOrderId) {
-                                console.log('[Monitor Cocina] Pedido nuevo: #' + currentId + ' (' + data.order.seccion + ')');
-                                playAlert(data.order.seccion);
+                                console.log('[Monitor Cocina] Pedido nuevo: #' + currentId + ' (' + (data.order.secciones || []).join(', ') + ')');
+                                playAlert(data.order.secciones);
                             }
                             lastOrderId = currentId;
                         }

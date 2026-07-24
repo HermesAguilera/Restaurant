@@ -11,8 +11,9 @@ class KitchenOrderApiController extends Controller
     /**
      * Devuelve el último pedido aún no entregado en formato JSON.
      *
-     * Incluye `seccion`: la sección de cocina del pedido, para que el monitor
-     * reproduzca el sonido propio de esa sección (pizza, china o general).
+     * Incluye `secciones`: las secciones de cocina del pedido (pizza, china,
+     * general), para que el monitor reproduzca el sonido de cada una en
+     * secuencia; un pedido con pizza y china suena con ambos.
      *
      * @return JsonResponse
      */
@@ -37,19 +38,20 @@ class KitchenOrderApiController extends Controller
                 'id' => $order->id,
                 'nombre_cliente' => $order->nombre_cliente,
                 'mesa' => $order->mesa,
-                'seccion' => $this->seccionDe($order),
+                'secciones' => $this->seccionesDe($order),
                 'created_at' => $order->created_at,
             ],
         ]);
     }
 
     /**
-     * Sección de cocina "principal" del pedido. Un pedido puede abarcar varias
-     * secciones, pero el parlante único suena una sola vez, así que se prioriza
-     * la sección especial (pizza, china) sobre 'general', que es el catch-all:
-     * si un pedido lleva pizza o comida china, se anuncia con ESE sonido.
+     * Secciones de cocina que abarca el pedido (solo comida), ordenadas
+     * especialidad primero (pizza, china) y 'general' al final. El monitor
+     * reproduce el sonido de cada una en secuencia.
+     *
+     * @return list<string>
      */
-    private function seccionDe(OrdenRestaurante $order): string
+    private function seccionesDe(OrdenRestaurante $order): array
     {
         $secciones = $order->detalles()
             ->whereHas('platillo', fn ($q) => $q->where('tipo', 'comida'))
@@ -59,12 +61,11 @@ class KitchenOrderApiController extends Controller
             ->filter()
             ->unique();
 
-        foreach (['pizza', 'china', 'general'] as $key) {
-            if ($secciones->contains($key)) {
-                return $key;
-            }
-        }
+        $ordenadas = collect(['pizza', 'china', 'general'])
+            ->filter(fn ($key) => $secciones->contains($key))
+            ->values()
+            ->all();
 
-        return 'general';
+        return $ordenadas ?: ['general'];
     }
 }

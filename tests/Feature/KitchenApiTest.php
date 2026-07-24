@@ -45,19 +45,19 @@ class KitchenApiTest extends TestCase
             ]);
     }
 
-    public function test_public_endpoint_incluye_la_seccion_del_pedido(): void
+    public function test_public_endpoint_incluye_las_secciones_del_pedido(): void
     {
         $pizza = \App\Models\Platillo::create(['nombre' => 'Pepperoni', 'precio' => 20, 'seccion' => 'pizza', 'tipo' => 'comida']);
         $general = \App\Models\Platillo::create(['nombre' => 'Arroz', 'precio' => 5, 'seccion' => 'general', 'tipo' => 'comida']);
 
-        // Pedido mixto: la especialidad (pizza) manda sobre 'general'.
+        // Pedido mixto: devuelve ambas secciones, especialidad primero.
         $orden = OrdenRestaurante::create(['nombre_cliente' => 'A', 'fecha_orden' => now()->toDateString()]);
         $orden->detalles()->create(['platillo_id' => $general->id, 'cantidad' => 1, 'precio_unitario' => 5, 'subtotal' => 5]);
         $orden->detalles()->create(['platillo_id' => $pizza->id, 'cantidad' => 1, 'precio_unitario' => 20, 'subtotal' => 20]);
 
         $this->getJson('/api/public/kitchen/latest-pending')
             ->assertOk()
-            ->assertJson(['has_pending' => true, 'order' => ['id' => $orden->id, 'seccion' => 'pizza']]);
+            ->assertJson(['has_pending' => true, 'order' => ['id' => $orden->id, 'secciones' => ['pizza', 'general']]]);
     }
 
     public function test_api_rechaza_peticiones_sin_autenticar(): void
